@@ -26,7 +26,7 @@ const OrderItem = (props) => {
     const convertGraphQlToWebHookOrder = o => {
         return {
             id: o.id.replace('gid://shopify/Order/',''), // original format gid://shopify/Order/3772116238507
-            test: o.test,
+            test: false, // o.test
             app_id: 'flo app',
             cancel_reason: o.cancelReason,
             cancelled_at: o.cancelledAt,
