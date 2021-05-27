@@ -27,7 +27,7 @@ const OrderItem = (props) => {
         return {
             id: o.id.replace('gid://shopify/Order/',''), // original format gid://shopify/Order/3772116238507
             test: false, // o.test
-            app_id: 'flo app ID',
+            app_id: 'flo app ID2',
             cancel_reason: o.cancelReason,
             cancelled_at: o.cancelledAt,
             currency: o.totalPriceSet.shopMoney.currencyCode,
