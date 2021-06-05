@@ -10,6 +10,8 @@ import { Card,
     Heading,
     Badge,
 } from '@shopify/polaris';
+
+
 import React from 'react';
 
 const OrderItem = (props) => {
@@ -39,8 +41,8 @@ const OrderItem = (props) => {
                 first_name:o.shippingAddress.FirstName,
                 address1:o.shippingAddress.address1,
                 phone:o.shippingAddress.phone,
-                city:o.shippingAddress,
-                zip:o.shippingAddress,
+                city:o.shippingAddress.city,
+                zip:o.shippingAddress.zip,
                 province:o.shippingAddress.provinceCode,
                 country:o.shippingAddress.country,
                 last_name:o.shippingAddress.lastName,
@@ -95,7 +97,7 @@ const OrderItem = (props) => {
                 </h3>
                 </Stack.Item>                
                 {                    
-                        order && order.job && order.job.step.customerLink ?
+                        order && order.job && order.job.step && order.job.step.customerLink ?
                         <Stack.Item fill><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </Stack.Item> :
                         <Stack.Item fill></Stack.Item>
                 }
@@ -111,18 +113,15 @@ const OrderItem = (props) => {
                     {
                      order && order.job &&  order && order.job.status ?
                         <React.Fragment>
-                            <Badge>{order.job.status}</Badge> 
+                            <Badge>{order.job.status}</Badge>                             
+                       </React.Fragment>
+                         :
+                        (order && order.id ?
                             <Button onClick={() => pushToRm(order)}>
                             Push to RM
-                           </Button>
-                       </React.Fragment>
-                         :<p>Null</p>
-                        // (order && order.id ?
-                        //     <Button onClick={() => pushToRm(order)}>
-                        //     Push to RM
-                        //   </Button>:
-                        //   <p>Null</p>
-                        //   )
+                          </Button>:
+                          <p>Error</p>
+                          )
                     }
                     </TextStyle>
                 </h3>

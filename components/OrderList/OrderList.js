@@ -1,5 +1,8 @@
 import styles from './OrderList.module.css';
 import React, { useEffect, useState, useCallback } from 'react';
+// require("dotenv").config();
+const axios = require('axios');
+import { authenticatedFetch } from '@shopify/app-bridge-utils';
 import gql from 'graphql-tag';
 import { Query, useQuery, useLazyQuery, useApolloClient } from 'react-apollo';
 import { Card,
@@ -17,19 +20,38 @@ import { Card,
 import OrderItem from './OrderItem/OrderItem';
 import store from 'store-js';
 import { Redirect } from '@shopify/app-bridge/actions';
-import { Context, useAppBridge } from '@shopify/app-bridge-react';
+import { Context, useAppBridge, getSessionToken } from '@shopify/app-bridge-react';
 import { GET_DOMAIN, GET_ORDERS, GET_PRODUCTS_BY_ID } from '../utils/graphQlQueries'
 import fetchApi from '../utils/fetchApi';
 
+// const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
-const OrderList = (props) => {
+
+const OrderList =  (props) => {
 console.log('flo OrderList');
-
+// const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
+// const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 // const client = useApolloClient();
    // const contextType = Context;
+
+
    const client = useApolloClient();
-    const app = useAppBridge();
+ 
+
+     const [sessionToken, setSessionToken] = useState(null);
+   
     const [domain, setDomain] = useState('flo domain');
+
+//     const instance = axios.create();
+// // intercept all requests on this axios instance
+// instance.interceptors.request.use(function (config) {
+//   return getSessionToken(app) // requires an App Bridge instance
+//     .then((token) => {
+//       // append your request headers with an authenticated token
+//       config.headers["Authorization"] = `Bearer ${token}`;
+//       return config;
+//     });
+// });
     
     // JobOrder is combination of Shopify Order with job property containing RouteMagnet Job obj
     // fetching jobOrders will need graphql Orders request to shopify + REST request to RM jobs
@@ -40,6 +62,13 @@ console.log('flo OrderList');
     const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
     
     useEffect(() => {
+
+      // if(app){
+      // getSessionToken(app).then(token => {
+      //   console.log('sessionToken',token);
+      // })}
+     
+
       console.log('flo useEffect');
       client.query({ query: GET_DOMAIN }).then(domain => {
         console.log('domain', domain.data.shop.primaryDomain.url);
@@ -108,7 +137,7 @@ console.log('flo OrderList');
         return fetchApi({
           method:'post',
           body:JSON.stringify(obj),
-          url:'https://route-magnet.herokuapp.com/shopify/orderslist/status',
+          url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
         })
           .then(jobs => {
             console.log('RmOrders:',JSON.stringify(jobs));
@@ -117,9 +146,6 @@ console.log('flo OrderList');
             const fullJobOrderList = ordersList.map((order,i) => ({...order, job:jobs[i]}));      
          //   setJobOrders(fullJobOrderList.slice());
             return fullJobOrderList.slice();
-          
-           
-           
           })
           .catch(err => {
             console.log('err', err);
@@ -141,15 +167,53 @@ console.log('flo OrderList');
             fetchJobOrders();
         }
 
+        const onTest = async (whOrder) => {
+
+       //   const app = useAppBridge();
+          
+              
+           console.log('onTest');
+          // fetchApi({
+          //   method:'post',
+          //   body:JSON.stringify(whOrder),
+          //   url:`/api/fetch-order`,
+          // })
+          // .then(re => {
+          //   console.log('test response', re);
+          // })
+        
+           const response = await axios.get('/api/fetch-order')
+           // .post('/api/fetch-order');
+          // .get('/api/fetch-order')
+           console.log('response test',response);
+        }
+
         const onPushToRM = (whOrder) => {
           console.log('onPushToRM', whOrder);
           fetchApi({
             method:'post',
             body:JSON.stringify(whOrder),
-            url:'https://route-magnet.herokuapp.com/shopify/order/add',
+            url:`${RM_SERVER_URL}/shopify/order/add`,
           })
             .then(response => {
-              console.log('response', response);
+              console.log('response job', response);
+              // if error, object returned has property error
+              if(response.error) {
+                console.log(response.error);
+                return;
+              }
+              const job = response;
+              setJobOrders(prevJobOrders => {
+                console.log('prev1',prevJobOrders); 
+                const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
+                console.log('index prevJobOrders', index);
+                if(index != -1) {
+                  const updatedJob = {...prevJobOrders[index],job:{...job}}            
+                  prevJobOrders[index] = updatedJob;
+                  console.log('prev2',prevJobOrders);  
+                }
+                return [...prevJobOrders];
+              })
             })
         }
   
@@ -197,7 +261,7 @@ console.log('flo OrderList');
                       key={id}
                       id={id}
                       order={item}
-                      onPush={onPushToRM}               
+                      onPush={onTest}               
                     />
                    );
                  }}
