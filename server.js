@@ -3,12 +3,14 @@ const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
 const https = require('https');
-const axios = require('axios')
+//const axios = require('axios');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
 const { verifyRequest } = require('@shopify/koa-shopify-auth');
 const { default: Shopify, ApiVersion } = require('@shopify/shopify-api');
 const getSubscriptionUrl = require('./server/getSubscriptionUrl');
 const Router = require('koa-router');
+const jwt = require('jsonwebtoken');
+// import fetchApi from './utils';
 
 dotenv.config();
 
@@ -19,7 +21,7 @@ Shopify.Context.initialize({
   HOST_NAME: process.env.SHOPIFY_APP_URL.replace(/https:\/\//, ""),
   API_VERSION: ApiVersion.October20,
   IS_EMBEDDED_APP: true,
-  SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
+  // SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
 });
 
 const port = parseInt(process.env.PORT, 10) || 3000;
@@ -29,119 +31,72 @@ const handle = app.getRequestHandler();
 
 const ACTIVE_SHOPIFY_SHOPS = {};
 
+const saveAccessTokenInDB = (shop,accessToken) => {
+  console.log('saveAccessTokenInDB', process.env.SHOPIFY_API_SECRET);
+  console.log('key', shop);
+
+  console.log('server accessToken', accessToken);
+
+  const bearerToken = jwt.sign(JSON.stringify({ 
+    shop: shop,
+    accessToken:accessToken, 
+    exp:new Date().getTime() + 60000
+  }), process.env.SHOPIFY_API_SECRET);
+  // no need post as shop and token are encrypted in header
+  fetch(
+    `${process.env.RM_SERVER_URL}/shopify/access_token/save`,
+    { method:'get',
+      headers: {      
+          'Accept': 'application/json',          
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`   
+        }
+    }
+   )
+   .then(data => {
+      if (data.status >= 200 && data.status <= 299) {
+        console.log('in data 200');
+        return data.json();   
+      } else {
+      console.log('in else');
+        return data.text();
+      }             
+    })
+    .then(val => {
+      console.log('val',val);
+      // return val
+    })
+    .catch(err => {
+      console.log('err',err)
+    // return err;
+    })  
+}
+
 app.prepare().then(() => {
   const server = new Koa();
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
-
-  server.use(
-    createShopifyAuth({
+  console.log('flo beforeAuth');
+  server.use(   
+    createShopifyAuth({     
         async afterAuth(ctx) {
           console.log('flo afterAuth');
             const { shop, scope, accessToken } = ctx.state.shopify;
+            console.log('accessToken', accessToken);
+           console.log('shop', shop);
+           console.log('env var', process.env.RM_SERVER_URL);
+         
+           saveAccessTokenInDB(shop,accessToken);        
+      
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
         ctx.redirect(`/?shop=${shop}`);
 
-        // const registration = await Shopify.Webhooks.Registry.register({
-        //     shop,
-        //     accessToken,
-        //     path: '/webhooks',
-        //     topic: 'ORDERS_CREATE',
-        //     apiVersion: ApiVersion.October20,
-        //     webhookHandler: (_topic, shop, _body) => {
-        //       console.log('webhookHandler ORDERS_CREATE',_topic, _body);
-        //    //   delete ACTIVE_SHOPIFY_SHOPS[shop];
-           
-        //    axios
-        //    .post('https://route-magnet.herokuapp.com/config', {
-        //        data: shop
-        //    }).then(res => {
-        //     console.log(`statusCode: ${res.statusCode}`)
-        //     console.log('axiox res', res);
-        //    })
-            //  runHttpRequest('https://route-magnet.herokuapp.com/config')
-            //  .then(res =>{
-            //     console.log('data response:', res);
-            //  }, err => console.log('reject:', err));
-            
-          
-           
-        //    https.get('https://route-magnet.herokuapp.com/config', (res) => {
-        //         console.log('statusCode:', res.statusCode);
-        //         // console.log('headers:', res.headers);
-
-        //         res.on('data', (d) => {
-        //             console.log('flo8',d);
-        //             data += d;
-        //           });
-          
-        //           res.on('end', () => {
-        //             console.log('flo9',data);
-        //             data = JSON.parse(data);
-        //             if (res.statusCode !== 200) {
-        //                 console.log('flo10 error');
-        //             //  reject(data);
-        //             } else {
-        //                 console.log('flo11', data);
-        //              // resolve(data);
-        //             }
-        //           });
-
-        //         }).on('error', (e) => {
-        //         console.error(e);
-        //         });
-          //   },
-          // });
-
-          // const regOrdersCreation = await Shopify.Webhooks.Registry.register({
-          //   shop,
-          //   accessToken,
-          //   path: '/order_fullfilled',
-          //   topic: 'ORDERS_FULFILLED',
-          //   apiVersion: ApiVersion.October20,
-          //   webhookHandler: (_topic, shop, _body) => {
-          //     console.log('ORDERS_FULFILLED webhookHandler',shop,'topic', _topic,'body');
-
-          //     axios
-          //     .get(`https://route-magnet.herokuapp.com/shopify/setup/${shop}/12345`).then(res => {
-             
-          //      console.log('axiox res', res);
-          //     })
-
-          //     axios
-          //     .post('https://route-magnet.herokuapp.com/shopify/add', {
-          //         shop: shop,
-          //         teamId: '1234',
-          //     }).then(res => {
-          //      console.log(`statusCode: ${res.statusCode}`)
-          //      console.log('axiox res', res);
-          //     })
-
-
-          //   },
-          // });
-        
-          // if (registration.success) {
-          //   console.log('Successfully registered webhook with ORDERS_CREATE!!');
-          // } else {
-          //   console.log('Failed to register webhook', registration.result);
-          // }
-          // if (regOrdersCreation.success) {
-          //   console.log('Successfully registered ORDERS_FULFILLED !!');
-          // } else {
-          //   console.log('Failed to register ORDERS_FULFILLED', regOrdersCreation.result);
-          // }
-//   https://8e0f78705f66.ngrok.io/auth?shop=routemagnet.myshopify.com
-        // const returnUrl = `https://${Shopify.Context.HOST_NAME}?shop=${shop}`;
-        // const subscriptionUrl = await getSubscriptionUrl(accessToken, shop, returnUrl);
-        // ctx.redirect(subscriptionUrl);
-    
+       
       },
     }),
   );
 
-  router.post("/graphql", verifyRequest({returnHeader: true}), async (ctx, next) => {
-    console.log('flo graphql');
+  router.post("/graphql", verifyRequest({returnHeader: true}), async (ctx, next) => {    
     await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
   });
 
@@ -153,8 +108,50 @@ app.prepare().then(() => {
   };
 
   // Any route starting with `/api` will not be checked for Shopify auth
-  router.get("/api/(.*)", async (ctx) => {
+  // router.get("/api/.*", verifyRequest({returnHeader: true}), async (ctx, next) => {
+  //   console.log('flo api server');
+  //   await handle(ctx.req, ctx.res);
+  // });
+
+  router.post("/api/(.*)", async (ctx) => {
+    console.log('api route post');
     await handle(ctx.req, ctx.res);
+  //  ctx.respond = false;
+   // ctx.res.statusCode = 200;
+  });
+
+  router.get("/api/(.*)", async (ctx) => {
+    console.log('api route get',ctx.req.headers);
+    await handle(ctx.req, ctx.res);
+    ctx.respond = false;
+    ctx.res.statusCode = 200;
+  });
+
+  router.get("/flo", async (ctx) => {
+    console.log('flo route get');
+    await handle(ctx.req, ctx.res);
+    fetch(
+      `${process.env.RM_SERVER_URL}/shopify/test`,
+      { method:'get',
+        headers: {      
+            'Accept': 'application/json',          
+            'Content-Type': 'application/json',
+          }
+        }
+     )   
+
+     .then(data => {
+      if (data.status >= 200 && data.status <= 299) {
+          console.log('response', data.json());
+          
+      } else{
+        console.log('error',data);
+        return data;
+      }
+      return data.json();              
+    })
+    .then(val => console.log('val',val))
+    .catch(err => console.log('err',err)) 
     ctx.respond = false;
     ctx.res.statusCode = 200;
   });

@@ -3,12 +3,13 @@ import App from 'next/app';
 import Head from 'next/head';
 import { AppProvider } from '@shopify/polaris';
 import { Provider, Context, useAppBridge } from "@shopify/app-bridge-react";
-import { authenticatedFetch } from "@shopify/app-bridge-utils";
+import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
 import '@shopify/polaris/dist/styles.css';
 import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+const axios = require('axios');
 
 function userLoggedInFetch(app) {
     const fetchFunction = authenticatedFetch(app);
@@ -28,12 +29,37 @@ function userLoggedInFetch(app) {
     };
   }
 
+  function AxiosInterceptor(pageProps) {
+    console.log('interceptor1');
+      const app = useAppBridge();
+      console.log('interceptor2');
+
+    axios.interceptors.request.use(function (config) {
+      
+ return getSessionToken(app) // requires an App Bridge instance
+     .then((token) => {
+      console.log('interceptor3', token);
+    //  append your request headers with an authenticated token
+     config.headers["Authorization"] = `Bearer ${token}`;
+     config.headers['Content-Type'] = 'application/json';
+     return config;
+     });
+     //  return config;
+    });
+     return (
+        <React.Fragment>
+        {pageProps.children}
+      </React.Fragment>
+      );
+  }
+
+
   
 function MyProvider(pageProps) {
    // static contextType = Context;
-    const app = useAppBridge();
-  
-    
+   console.log('MyProvider1');
+   const app = useAppBridge();
+   console.log('MyProvider2');
       // const app = this.context;
   
       const client = new ApolloClient({
@@ -55,6 +81,7 @@ function MyApp(props){
  
     const { Component, pageProps, shopOrigin } = props;
 
+  
     const config = { apiKey: API_KEY, shopOrigin, forceRedirect: true };
     return (
       <React.Fragment>
@@ -65,9 +92,13 @@ function MyApp(props){
         <Provider config={config}>
           <ClientRouter />
           <AppProvider i18n={translations}>
+          
           <MyProvider>
-            <Component {...pageProps} />
+           <AxiosInterceptor>
+              <Component {...pageProps} />
+             </AxiosInterceptor>
             </MyProvider>
+           
           </AppProvider>
         </Provider>
       </React.Fragment>
