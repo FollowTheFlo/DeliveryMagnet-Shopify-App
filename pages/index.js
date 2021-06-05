@@ -5,6 +5,7 @@ import { ResourcePicker, TitleBar } from '@shopify/app-bridge-react';
 import store from 'store-js';
 import { useState, useEffect, useCallback } from 'react';
 import OrderList from '../components/OrderList/OrderList';
+import Settings from '../components/Settings/Settings'
 import { Card,
   ResourceList,
   Stack,
@@ -48,19 +49,19 @@ const Index = (props) => {
 
   
     return (
-      <Page>         
-       
+      <Page>     
        
            <Tabs tabs={tabs} selected={tabIndex} onSelect={handleTabChange} fitted>
          </Tabs>
          { tabIndex === 0 ?(
-            <React.Fragment>
-              <Heading>Orders</Heading>
+            <React.Fragment>             
               <OrderList/>
             </React.Fragment>
             )
             :
-            <Heading>Config</Heading>
+            <React.Fragment>             
+            <Settings/>
+          </React.Fragment>
          }
         
    
