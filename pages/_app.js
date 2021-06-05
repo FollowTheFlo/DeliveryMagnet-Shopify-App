@@ -9,6 +9,7 @@ import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+import { AdminContextProvider } from '../store/admin-context'
 const axios = require('axios');
 
 function userLoggedInFetch(app) {
@@ -93,10 +94,12 @@ function MyApp(props){
           <ClientRouter />
           <AppProvider i18n={translations}>
           
-          <MyProvider>
-           <AxiosInterceptor>
-              <Component {...pageProps} />
-             </AxiosInterceptor>
+            <MyProvider>
+              <AxiosInterceptor>
+                <AdminContextProvider>
+                  <Component {...pageProps} />
+                </AdminContextProvider>
+              </AxiosInterceptor>
             </MyProvider>
            
           </AppProvider>

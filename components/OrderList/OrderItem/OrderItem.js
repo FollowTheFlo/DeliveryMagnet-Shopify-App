@@ -16,7 +16,7 @@ import React from 'react';
 
 const OrderItem = (props) => {
 
-    const {order, onPush} = props;
+    const {order, onPush, isManualMode} = props;
 
     const pushToRm = orderSelection => {
         console.log('pushToRm orderId', orderSelection);
@@ -116,7 +116,7 @@ const OrderItem = (props) => {
                             <Badge>{order.job.status}</Badge>                             
                        </React.Fragment>
                          :
-                        (order && order.id ?
+                        (order && order.id && isManualMode ?
                             <Button onClick={() => pushToRm(order)}>
                             Push to RM
                           </Button>:

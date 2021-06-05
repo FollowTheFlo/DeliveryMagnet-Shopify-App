@@ -1,7 +1,8 @@
 import styles from './OrderList.module.css';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 // require("dotenv").config();
 const axios = require('axios');
+import AdminContext from '../../store/admin-context'
 import { authenticatedFetch } from '@shopify/app-bridge-utils';
 import gql from 'graphql-tag';
 import { Query, useQuery, useLazyQuery, useApolloClient } from 'react-apollo';
@@ -41,18 +42,9 @@ console.log('flo OrderList');
      const [sessionToken, setSessionToken] = useState(null);
    
     const [domain, setDomain] = useState('flo domain');
-
-//     const instance = axios.create();
-// // intercept all requests on this axios instance
-// instance.interceptors.request.use(function (config) {
-//   return getSessionToken(app) // requires an App Bridge instance
-//     .then((token) => {
-//       // append your request headers with an authenticated token
-//       config.headers["Authorization"] = `Bearer ${token}`;
-//       return config;
-//     });
-// });
+    const adminCtx = useContext(AdminContext);
     
+   
     // JobOrder is combination of Shopify Order with job property containing RouteMagnet Job obj
     // fetching jobOrders will need graphql Orders request to shopify + REST request to RM jobs
     const [jobOrders, setJobOrders] = useState([]);
@@ -261,7 +253,8 @@ console.log('flo OrderList');
                       key={id}
                       id={id}
                       order={item}
-                      onPush={onTest}               
+                      onPush={onPushToRM}
+                      isManualMode={adminCtx.mode.manual}             
                     />
                    );
                  }}
