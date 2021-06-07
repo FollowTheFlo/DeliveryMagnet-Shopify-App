@@ -41,7 +41,7 @@ console.log('flo OrderList');
 
      const [sessionToken, setSessionToken] = useState(null);
    
-    const [domain, setDomain] = useState('flo domain');
+    // const [domain, setDomain] = useState('flo domain');
     const adminCtx = useContext(AdminContext);
     
    
@@ -53,19 +53,20 @@ console.log('flo OrderList');
     const [loadingMessage, setLoadingMessage] = useState('');
     const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
     
+
     useEffect(() => {
 
-      // if(app){
-      // getSessionToken(app).then(token => {
-      //   console.log('sessionToken',token);
-      // })}
+      if(adminCtx.domain) {
+        console.log('domain already set');
+        return;
+      } 
      
 
       console.log('flo useEffect');
       client.query({ query: GET_DOMAIN }).then(domain => {
         console.log('domain', domain.data.shop.primaryDomain.url);
         if(domain.data.shop.primaryDomain.url){
-          setDomain(domain.data.shop.primaryDomain.url);
+          adminCtx.onDomainChange(domain.data.shop.primaryDomain.url);
           fetchJobOrders();
         }
       })
@@ -222,7 +223,7 @@ console.log('flo OrderList');
                     { 
                       loadingMessage && <div  className={styles.refreshMessage}>{loadingMessage}</div>
                     }
-                 <p>Shop:{domain}</p>
+                 <p>Shop:{adminCtx.domain}</p>
                  {/* <ResourceList>
                     <Stack>
                         <Stack.Item fill>

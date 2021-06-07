@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 const AdminContext = React.createContext({
+  domain:'',
+  onDomainChange: (value) => {},
   mode: {
     manual:true,
     auto_create:false,
     auto_fullfill:false,
   }, // manual, auto_create, auto_fullfill
   sessionToken: '',
-  onSelectionChange: () => {}, 
+  onSelectionChange: (option,value) => {}, 
 });
 
 export const AdminContextProvider = (props) => {
@@ -17,10 +19,19 @@ export const AdminContextProvider = (props) => {
     auto_fullfill:false,
   });
   const [sessionToken, setSessionToken] = useState('');
+  const [domain, setDomain] = useState('');
 
   useEffect(() => {
     // get mode from server
+    console.log('admin context');
   },[]);
+
+  
+
+  const domainHandler = (value) => {
+    console.log('domainHandler',value);
+    setDomain(value);
+  }
 
   const modeSelectionHandler = (option, checked) => {
     console.log('modeSelectionHandler', option, checked);
@@ -45,6 +56,8 @@ export const AdminContextProvider = (props) => {
       value={{
         mode: mode,
         onModeSelected: modeSelectionHandler,
+        domain: domain,
+        onDomainChange: domainHandler,
       }}
     >
       {props.children}
