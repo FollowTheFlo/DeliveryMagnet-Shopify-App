@@ -10,6 +10,8 @@ const AdminContext = React.createContext({
   }, // manual, auto_create, auto_fullfill
   sessionToken: '',
   onSelectionChange: (option,value) => {}, 
+  jobOrders:[],
+  onJobOrdersChange: (jOrders) => {},
 });
 
 export const AdminContextProvider = (props) => {
@@ -18,8 +20,9 @@ export const AdminContextProvider = (props) => {
     auto_create:false,
     auto_fullfill:false,
   });
-  const [sessionToken, setSessionToken] = useState('');
+ 
   const [domain, setDomain] = useState('');
+  const [jobOrders, setJobOrders] = useState([]);
 
   useEffect(() => {
     // get mode from server
@@ -46,10 +49,10 @@ export const AdminContextProvider = (props) => {
     setMode(updatedMode);
   };
 
-  const sessionTokenHandler = (value) => {
-    console.log('modeSelectionHandler');
-    setSessionToken(value);
-  };
+  const onJobOrdersHandler = (value) => {
+    console.log('onJobOrdersHandler',value);
+    setJobOrders(value);
+  }
 
   return (
     <AdminContext.Provider
@@ -58,6 +61,8 @@ export const AdminContextProvider = (props) => {
         onModeSelected: modeSelectionHandler,
         domain: domain,
         onDomainChange: domainHandler,
+        jobOrders:jobOrders,
+        onJobOrdersChange: onJobOrdersHandler,
       }}
     >
       {props.children}

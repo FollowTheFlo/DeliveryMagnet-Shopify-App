@@ -38,8 +38,6 @@ console.log('flo OrderList');
 
    const client = useApolloClient();
  
-
-     const [sessionToken, setSessionToken] = useState(null);
    
     // const [domain, setDomain] = useState('flo domain');
     const adminCtx = useContext(AdminContext);
@@ -47,7 +45,7 @@ console.log('flo OrderList');
    
     // JobOrder is combination of Shopify Order with job property containing RouteMagnet Job obj
     // fetching jobOrders will need graphql Orders request to shopify + REST request to RM jobs
-    const [jobOrders, setJobOrders] = useState([]);
+    // const [jobOrders, setJobOrders] = useState([]);
     const [refreshDate, setRefreshDate] = useState('');
     // inform on loading stage: requesting data on shopify or RM
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -84,13 +82,13 @@ console.log('flo OrderList');
       })     
       .then(data => {
         console.log('return data', data);        
-        setJobOrders(data);
+        adminCtx.onJobOrdersChange(data);
         setRefreshDate(new Date().toLocaleString());
         setLoadingMessage('');
       })
       .catch(errMessage => {
         console.log('err2', errMessage);
-        setJobOrders([]);
+        adminCtx.onJobOrdersChange(data);
         setLoadingMessage(errMessage);
       })
     }
@@ -241,10 +239,10 @@ console.log('flo OrderList');
                         </Stack.Item>
                     </Stack>
                  </ResourceList> */}
-              { jobOrders && jobOrders.length > 0 && <ResourceList
+              { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 && <ResourceList
                 showHeader={true}
                 resourceName={{ singular: 'Order', plural: 'Orders' }}
-                items={jobOrders}
+                items={adminCtx.jobOrders}
                 renderItem={(item,itemId, index) => {
                   const {id, name} = item;
 
