@@ -194,8 +194,9 @@ console.log('flo OrderList');
                 return;
               }
               const job = response;
-              setJobOrders(prevJobOrders => {
-                console.log('prev1',prevJobOrders); 
+              console.log('prev1',prevJobOrders);
+                // get previous state
+                const prevJobOrders = [...adminCtx.jobOrders]; 
                 const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
                 console.log('index prevJobOrders', index);
                 if(index != -1) {
@@ -203,8 +204,7 @@ console.log('flo OrderList');
                   prevJobOrders[index] = updatedJob;
                   console.log('prev2',prevJobOrders);  
                 }
-                return [...prevJobOrders];
-              })
+                adminCtx.onJobOrdersChange([...prevJobOrders]);
             })
         }
   

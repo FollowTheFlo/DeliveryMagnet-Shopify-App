@@ -107,11 +107,6 @@ app.prepare().then(() => {
     ctx.res.statusCode = 200;
   };
 
-  // Any route starting with `/api` will not be checked for Shopify auth
-  // router.get("/api/.*", verifyRequest({returnHeader: true}), async (ctx, next) => {
-  //   console.log('flo api server');
-  //   await handle(ctx.req, ctx.res);
-  // });
 
   router.post("/api/(.*)", async (ctx) => {
     console.log('api route post');
@@ -120,12 +115,12 @@ app.prepare().then(() => {
    // ctx.res.statusCode = 200;
   });
 
-  router.get("/api/(.*)", async (ctx) => {
-    console.log('api route get',ctx.req.headers);
-    await handle(ctx.req, ctx.res);
-    ctx.respond = false;
-    ctx.res.statusCode = 200;
-  });
+  // router.get("/api/(.*)", async (ctx) => {
+  //   console.log('api route get',ctx.req.headers);
+  //   await handle(ctx.req, ctx.res);
+  //   ctx.respond = false;
+  //   ctx.res.statusCode = 200;
+  // });
 
   router.get("/flo", async (ctx) => {
     console.log('flo route get');

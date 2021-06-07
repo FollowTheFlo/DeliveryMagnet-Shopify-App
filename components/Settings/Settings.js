@@ -13,6 +13,7 @@ import { Card,
     Badge,
 } from '@shopify/polaris';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
+const axios = require('axios');
 import AdminContext from '../../store/admin-context';
 
 
@@ -25,15 +26,45 @@ const Settings = (props) => {
   //  const [value, setValue] = useState('manual');
     const adminCtx = useContext(AdminContext);
 
+    useEffect(() => {
+      console.log('useEffect');
+      // at initial time, get the actual option
+      getOptionValuefromShopify();
+    },[])
+
     const handleChange = useCallback(
       (_checked, option) => {
         console.log('_checked',_checked);
         console.log('option',option);
-        adminCtx.onModeSelected(option,_checked);
-      //  setValue(newValue);        
+        axios.post('/api/webhooks',{option})
+        .then(response => {
+          console.log('response webhooks api', response);
+          adminCtx.onModeSelected(option,_checked);
+        })
+        .catch(err => {
+          console.log('err wb change', err);
+        })          
         },
       [],
     );
+
+    const getOptionValuefromShopify = () => {
+      axios.post('/api/webhooks',{option:"list"})
+      .then(response => {
+        console.log('response webhooks api', response);
+        if(!response || !response.data || !response.data.success || !response.data.message) {
+          if(response && response.data && !response.data.message)(console.log('fail',response.data.message))
+          
+          // don't set any option
+          return;
+        }
+        // option value is return in message property when success is true        
+        adminCtx.onModeSelected(response.data.message,true);
+      })
+      .catch(err => {
+        console.log('err webhook list:', err);
+      })
+    }
   
     return (
       <Stack vertical>

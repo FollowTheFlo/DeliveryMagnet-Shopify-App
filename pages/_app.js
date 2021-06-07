@@ -43,6 +43,7 @@ function userLoggedInFetch(app) {
     //  append your request headers with an authenticated token
      config.headers["Authorization"] = `Bearer ${token}`;
      config.headers['Content-Type'] = 'application/json';
+     config.headers['Accept'] = 'application/json';
      return config;
      });
      //  return config;

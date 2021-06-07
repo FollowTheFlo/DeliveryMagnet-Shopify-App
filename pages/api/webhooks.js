@@ -152,18 +152,35 @@ const getShopFromBearerHeader = async (req) => {
 }
 async function handler(req, res) {
      console.log('fetch order api handler',req.headers.authorization);
+     console.log('req.method',req.method);
+
+    //  if (req.method !== 'POST' || req.method !== 'post') {
+    //   console.log('GET method');
+    //   res.status(200).json({success:false,message:'POST method, Must be GET method'});
+    //   return;      
+    // }
+  
+    const data = req.body
+    const { option } = data;
+
+    if(!option){
+      console.log('No option value in body');
+      res.status(200).json({success:false,message:'No option value in body'});
+      return;      
+    }
+    console.log('option', option);
+      
    
   const shop = await getShopFromBearerHeader(req);
-  if(!shop){
-    console.log('no shop');
-    res.status(200).json({success:false,message:'Shop value null'});
-    return;
-  }
+  // if(!shop){
+  //   console.log('no shop');
+  //   res.status(200).json({success:false,message:'Shop value null'});
+  //   return;
+  // }
   console.log('shop response', shop);
 
   const sessionToken = req.headers.authorization.replace('Bearer ','');
   
-  console.log('before axios');
     const accessToken = await getAccessTokenFromDB(sessionToken);
     if(!accessToken) {
       res.status(200).json({success:false,message:'accesstoken value null'});
@@ -174,25 +191,68 @@ async function handler(req, res) {
     const headers = {
       'Content-Type': 'application/json',
       'X-Shopify-Access-Token': accessToken
-    }   
-    
-    const successDeletion = await deleteAllWebHooks(headers, shop);
-    console.log('delete success', successDeletion);
+    }
 
-    if(!successDeletion) {
-      res.status(200).json({success:false, message:'Error in WebHooks deletion'});
-      return;
-    };
-
-    const successCreation = await createWebHook(headers,'orders/create', shop, "https://route-magnet.herokuapp.com/shopify/order/add/");
-    console.log('successCreation', successCreation);
-
-    const activeList = await getListActiveWebHooks(headers, shop)
-    console.log('activeList', activeList);
-
-    res.status(200).json({success:true,message:true});
   
-    return true;
+    const activeListAtStart = await getListActiveWebHooks(headers, shop)
+    console.log('activeList', activeListAtStart);
+
+
+    // 3 options: manual, auto_create, auto_fullfill
+    // output the actual option based on subscribed webhook
+    if(option === 'list') {
+      if(activeListAtStart && activeListAtStart.length > 1) {
+        res.status(200).json({success:false,message:'more than 1 hook, should never happens'});
+        return;
+      }
+      if(activeListAtStart && activeListAtStart.length === 1) {
+        console.log('option:',activeListAtStart[0].topic);
+        const option = activeListAtStart[0].topic === 'orders/create' ? 'auto_create' : 'auto_fullfill';
+        res.status(200).json({success:true,message:option});
+        return;
+      }
+      // if list undefined or empty, option is manual
+      res.status(200).json({success:true,message:'manual'});
+      return;
+    }
+
+    if(activeListAtStart && activeListAtStart.length > 0){
+      const successDeletion = await deleteAllWebHooks(headers, shop);
+      console.log('delete success', successDeletion);
+
+      if(!successDeletion) {
+        res.status(200).json({success:false, message:'Error in WebHooks deletion'});
+        return;
+      };
+    } else (console.log('list already null, no need delete'))
+
+    if(option === 'list') {
+      const activeListAtEnd = await getListActiveWebHooks(headers, shop)
+      console.log('activeList', activeListAtEnd);
+      res.status(200).json({success:true,message:''});
+
+    } else if(option === 'manual') {
+      
+      // do nothing as wbehooks are already deleted
+      console.log('manual, delete all webhooks');   
+
+    } else if(option === 'auto_create') {
+      // register Order Creation WebHook
+      const successCreation = await createWebHook(headers,'orders/create', shop, "https://route-magnet.herokuapp.com/shopify/order/add/");
+      console.log('successCreation', successCreation);
+  
+    } else if(option === 'auto_fullfill') {
+      // register Order Fullfill WebHook
+      const successCreation = await createWebHook(headers,'orders/fulfilled', shop, "https://route-magnet.herokuapp.com/shopify/order/add/");
+      console.log('successCreation', successCreation);
+    }
+
+    const activeListAtEnd = await getListActiveWebHooks(headers, shop)
+    console.log('activeList', activeListAtEnd);
+
+    res.status(200).json({success:true,message:''});
+  
+    return;
 }
 
 export default handler;

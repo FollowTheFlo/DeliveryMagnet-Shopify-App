@@ -4,7 +4,7 @@ const AdminContext = React.createContext({
   domain:'',
   onDomainChange: (value) => {},
   mode: {
-    manual:true,
+    manual:false,
     auto_create:false,
     auto_fullfill:false,
   }, // manual, auto_create, auto_fullfill
@@ -15,8 +15,10 @@ const AdminContext = React.createContext({
 });
 
 export const AdminContextProvider = (props) => {
+  // initial state with all unchecked option
+  // when first visit on Settings, we will fetch the active option from Shopify
   const [mode, setMode] = useState({
-    manual:true,
+    manual:false,
     auto_create:false,
     auto_fullfill:false,
   });
