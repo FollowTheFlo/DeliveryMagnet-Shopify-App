@@ -1,4 +1,5 @@
-require('isomorphic-fetch');
+ // require('isomorphic-fetch');
+ // @ts-ignore
 const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
@@ -10,6 +11,7 @@ const { default: Shopify, ApiVersion } = require('@shopify/shopify-api');
 const getSubscriptionUrl = require('./server/getSubscriptionUrl');
 const Router = require('koa-router');
 const jwt = require('jsonwebtoken');
+
 // import fetchApi from './utils';
 
 dotenv.config();

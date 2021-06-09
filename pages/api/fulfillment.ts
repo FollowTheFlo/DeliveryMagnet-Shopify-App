@@ -1,7 +1,9 @@
 import fetchApi from '../../components/utils/fetchApi';
 import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { FulFillmentInput, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
 
-async function handler(req, res) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log('fulfillment api handler',req.headers.authorization);
     console.log('req.method',req.method);
     console.log('req.body',req.body);
@@ -25,7 +27,7 @@ async function handler(req, res) {
       'X-Shopify-Access-Token': accessToken
     }
 
-    const data = req.body
+    const data:FulFillmentInput = req.body;
     const { action, orderId } = data;
     if(!orderId) {
         res.status(200).json({success:false,message:'orderId null'});
@@ -33,19 +35,19 @@ async function handler(req, res) {
     }
     const fulfillmentRes = await getOrderFulfillment(headers, shop, orderId);
     if(fulfillmentRes && fulfillmentRes.fulfillments && fulfillmentRes.fulfillments.length > 0) {
-        res.status(200).json({success:false,message:'already fulfilled'});
+        res.status(200).json({success:false,message:'order already fulfilled'});
         return;
     }
     const success = await postOrderFullfillment(headers, shop, orderId);
-    res.status(200).json({success:success,message:'postOrderFullfillment'});
+    res.status(200).json({success:success,message:`Fulfillment created succesfully for order  + ${orderId}`});
 
     
 }
 
-const getOrderFulfillment = async (headers,shop,orderId) => {
+const getOrderFulfillment = async (headers,shop,orderId):Promise<ShopifyOrderFullFillments> => {
     console.log('getOrderFulfillment');
     try {
-        const fulfillment = await fetchApi({
+        const fulfillment:ShopifyOrderFullFillments = await fetchApi({
           method:'get',
           headers,
           url:`https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,       
@@ -57,7 +59,7 @@ const getOrderFulfillment = async (headers,shop,orderId) => {
        return fulfillment;
       } catch(err) {
         console.log('fulfillment err',err);
-        return [];
+        return null;
        
       }
 }

@@ -13,15 +13,12 @@ import { Card,
     Badge,
 } from '@shopify/polaris';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
-const axios = require('axios');
+import { SuccessResponse } from '../../model/responses.model';
+import axios from 'axios';
 import AdminContext from '../../store/admin-context';
 
 
 const Settings = (props) => {
-    const [active, setActive] = useState(false);
-    // WB means WebHook
-    const [OrderCreatedWHActive, setOrderCreatedWHActive] = useState(false);
-    const [OrderFullfilledWHActive, setOrderFullfilledWHActive] = useState(false);
 
   //  const [value, setValue] = useState('manual');
     const adminCtx = useContext(AdminContext);
@@ -38,7 +35,8 @@ const Settings = (props) => {
         console.log('option',option);
         axios.post('/api/webhooks',{option})
         .then(response => {
-          console.log('response webhooks api', response);
+          const result = response?.data as SuccessResponse;
+          console.log('response webhooks api', result);
           adminCtx.onModeSelected(option,_checked);
         })
         .catch(err => {
@@ -49,17 +47,21 @@ const Settings = (props) => {
     );
 
     const getOptionValuefromShopify = () => {
+      // reach our API then server will check Shopify webhooks and determine which option is being used
       axios.post('/api/webhooks',{option:"list"})
       .then(response => {
-        console.log('response webhooks api', response);
-        if(!response || !response.data || !response.data.success || !response.data.message) {
-          if(response && response.data && !response.data.message)(console.log('fail',response.data.message))
+        console.log('response webhooks api', response.data);
+        if(!response.data) return;
+
+        const data = response.data as SuccessResponse;
+        if(!data.success) {
+          console.log('fail',data.message ?? 'empty message');
           
           // don't set any option
           return;
         }
         // option value is return in message property when success is true        
-        adminCtx.onModeSelected(response.data.message,true);
+        adminCtx.onModeSelected(data.message,true);
       })
       .catch(err => {
         console.log('err webhook list:', err);

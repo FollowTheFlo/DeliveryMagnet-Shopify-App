@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { AdminContextType } from '../model/context.model';
+import { JobOrder } from '../model/orders.model';
+import { WhMode } from '../model/webhooks.model';
 
 const AdminContext = React.createContext({
   domain:'',
@@ -7,24 +10,23 @@ const AdminContext = React.createContext({
     manual:false,
     auto_create:false,
     auto_fullfill:false,
-  }, // manual, auto_create, auto_fullfill
-  sessionToken: '',
-  onSelectionChange: (option,value) => {}, 
+  }, // manual, auto_create, auto_fullfill 
+  onModeSelected: (option,value) => {}, 
   jobOrders:[],
   onJobOrdersChange: (jOrders) => {},
-});
+} as AdminContextType);
 
 export const AdminContextProvider = (props) => {
   // initial state with all unchecked option
   // when first visit on Settings, we will fetch the active option from Shopify
-  const [mode, setMode] = useState({
+  const [mode, setMode] = useState<WhMode>({
     manual:false,
     auto_create:false,
     auto_fullfill:false,
   });
  
-  const [domain, setDomain] = useState('');
-  const [jobOrders, setJobOrders] = useState([]);
+  const [domain, setDomain] = useState<string>('');
+  const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
 
   useEffect(() => {
     // get mode from server
@@ -38,7 +40,7 @@ export const AdminContextProvider = (props) => {
     setDomain(value);
   }
 
-  const modeSelectionHandler = (option, checked) => {
+  const modeSelectionHandler = (option:string, checked:boolean) => {
     console.log('modeSelectionHandler', option, checked);
     // set all to false
     const updatedMode = {
@@ -51,9 +53,9 @@ export const AdminContextProvider = (props) => {
     setMode(updatedMode);
   };
 
-  const onJobOrdersHandler = (value) => {
-    console.log('onJobOrdersHandler',value);
-    setJobOrders(value);
+  const onJobOrdersHandler = (jList:JobOrder[]) => {
+    console.log('onJobOrdersHandler',jList);
+    setJobOrders(jList);
   }
 
   return (

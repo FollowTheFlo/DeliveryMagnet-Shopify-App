@@ -13,19 +13,27 @@ import { Card,
 
 
 import React from 'react';
+import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.model';
 
-const OrderItem = (props) => {
+type OrderItemProps = {
+    id: string;
+    order:JobOrder;
+    onPush:(o:WHOrder)=>void;
+    isManualMode:boolean;
+}
+
+const OrderItem = (props:OrderItemProps) => {
 
     const {order, onPush, isManualMode} = props;
 
-    const pushToRm = orderSelection => {
+    const pushToRm = (orderSelection:JobOrder) => {
         console.log('pushToRm orderId', orderSelection);
         const whOrder = convertGraphQlToWebHookOrder(orderSelection);        
         onPush(whOrder);
        
     }
 
-    const convertGraphQlToWebHookOrder = o => {
+    const convertGraphQlToWebHookOrder = (o:JobOrder):WHOrder => {
         return {
             id: o.id.replace('gid://shopify/Order/',''), // original format gid://shopify/Order/3772116238507
             test: false, // o.test
@@ -38,19 +46,19 @@ const OrderItem = (props) => {
             email: o.email,
             order_status_url: 'https://routemagnet.myshopify.com/order/12312897',
             shipping_address : o.shippingAddress ? {
-                first_name:o.shippingAddress.FirstName,
+                first_name:o.shippingAddress.firstName,
                 address1:o.shippingAddress.address1,
-                phone:o.shippingAddress.phone,
+                phone:o.phone ?? '',
                 city:o.shippingAddress.city,
                 zip:o.shippingAddress.zip,
                 province:o.shippingAddress.provinceCode,
                 country:o.shippingAddress.country,
                 last_name:o.shippingAddress.lastName,
                 address2:o.shippingAddress.address2,
-                company:o.shippingAddress.company,
+                company:o.shippingAddress.address1, // no company in Shopify order
                 latitude:o.shippingAddress.latitude,
                 longitude:o.shippingAddress.longitude,
-                name:o.shippingAddress.name,
+                name:o.shippingAddress.firstName ?? '' + ' ' + o.shippingAddress.lastName ?? '',
                 country_code:o.shippingAddress.country,
                 province_code:o.shippingAddress.provinceCode,
             } : null,
@@ -87,6 +95,7 @@ const OrderItem = (props) => {
 
 
     return (
+        // @ts-ignore
         <ResourceList.Item>
             <Stack>
                 <Stack.Item fill>

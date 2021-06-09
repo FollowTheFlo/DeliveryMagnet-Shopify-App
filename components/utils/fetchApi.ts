@@ -1,4 +1,12 @@
-const fetchApi = (props) => {
+
+type FetchApiProps = {
+   method:'get'|'post',
+   url:string,
+   body?:any, //optional when using get, can be any JSON object so set as any
+   headers?:any, // if empty set default with JSOn content-type and no token
+}
+
+const fetchApi = (props:FetchApiProps) => {
     console.log('fetchApi', props);
     let {method, body, url, headers} = props;
     
@@ -29,12 +37,12 @@ if(!headers)
         }
           
           )
-          .then(response => {
+          .then(response => {              
               console.log('response status', response.status);
             if (response.status >= 200 && response.status <= 299) {
                 return response.json();
             } else{
-                throw Error(response);
+                throw Error('Error with status ' + response.status);
             }              
         }).catch(err=>console.log('err',JSON.stringify(err)))
           

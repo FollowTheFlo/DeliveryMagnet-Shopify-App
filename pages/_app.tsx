@@ -4,13 +4,15 @@ import Head from 'next/head';
 import { AppProvider } from '@shopify/polaris';
 import { Provider, Context, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
+import { Redirect } from '@shopify/app-bridge/actions';
 import '@shopify/polaris/dist/styles.css';
 import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
-import { AdminContextProvider } from '../store/admin-context'
+import { AdminContextProvider } from '../store/admin-context';
 const axios = require('axios');
+
 
 function userLoggedInFetch(app) {
     const fetchFunction = authenticatedFetch(app);
@@ -64,11 +66,28 @@ function MyProvider(pageProps) {
    console.log('MyProvider2');
       // const app = this.context;
   
+    //   const defaultOptions = {
+    //     watchQuery: {
+    //       fetchPolicy: 'network-only',
+    //       errorPolicy: 'ignore',
+    //     },
+    //     query: {
+    //       fetchPolicy: 'network-only',
+    //       errorPolicy: 'all',
+    //     },
+    //   }
+    
+    // const client = new ApolloClient({
+    //   link: concat(authMiddleware, httpLink),
+    //   cache: new InMemoryCache(),
+    //   defaultOptions: defaultOptions,
+    
+    // });
       const client = new ApolloClient({
         fetch: userLoggedInFetch(app),
-        fetchOptions: {
+        fetchOptions: {         
           credentials: "include",
-        },
+        }
       });
   
       return (
@@ -83,8 +102,8 @@ function MyApp(props){
  
     const { Component, pageProps, shopOrigin } = props;
 
-  
-    const config = { apiKey: API_KEY, shopOrigin, forceRedirect: true };
+console.log('API_KEY',process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);  
+    const config = { apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY, shopOrigin, forceRedirect: true };
     return (
       <React.Fragment>
         <Head>
