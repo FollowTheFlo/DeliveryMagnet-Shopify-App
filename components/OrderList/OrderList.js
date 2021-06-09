@@ -147,11 +147,11 @@ console.log('flo OrderList');
         }
 
 
-        const  getDomain = () => {
-          console.log('getDomain');
-          const { loading, error, data } = useQuery(GET_DOMAIN);
+        // const  getDomain = () => {
+        //   console.log('getDomain');
+        //   const { loading, error, data } = useQuery(GET_DOMAIN);
         
-        }
+        // }
 
         const onRefresh = () => {
             console.log('refresh');
@@ -173,7 +173,7 @@ console.log('flo OrderList');
           //   console.log('test response', re);
           // })
         
-           const response = await axios.get('/api/fetch-order')
+           const response = await axios.get('/api/fetch-order');
            // .post('/api/fetch-order');
           // .get('/api/fetch-order')
            console.log('response test',response);
@@ -181,10 +181,18 @@ console.log('flo OrderList');
 
         const onPushToRM = (whOrder) => {
           console.log('onPushToRM', whOrder);
+          axios.post('/api/fulfillment',{orderId:whOrder.id})
+          .then(response => {
+            console.log('response fulfillment api', response);           
+          })
+          .catch(err => {
+            console.log('err fulfillment', err);
+          })
+          return;
           fetchApi({
             method:'post',
             body:JSON.stringify(whOrder),
-            url:`${RM_SERVER_URL}/shopify/order/add`,
+            url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
           })
             .then(response => {
               console.log('response job', response);

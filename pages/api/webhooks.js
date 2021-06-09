@@ -1,61 +1,14 @@
 const { default: Shopify, ApiVersion } = require('@shopify/shopify-api');
 const axios = require('axios');
-const jwt = require('jsonwebtoken');
+
 import { useAppBridge } from "@shopify/app-bridge-react";
 import fetchApi from '../../components/utils/fetchApi';
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
-
+import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
 // const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
 
-const getAccessTokenFromDB = async (sessionToken) => {
-  console.log('getAccessTokenFromDB');
-
-  try{
-    const response = await fetchApi(
-      {
-        method:'get',
-        url:`${process.env.RM_SERVER_URL}/shopify/access_token`,
-        headers:{
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`
-        }
-      });
-      if(!response || response.error !== '' || !response.accessToken) {
-        console.log('accessTokenResponse error', response.error);
-        return null;
-      }
-    return response.accessToken;
-  } catch(err){
-    console.log('err',err);
-    return null;
-  }
-  // const response = await fetchApi({
-  //   method:'post',  
-  //   url:`${RM_SERVER_URL}/shopify/access_token`,
-  //   body:JSON.stringify({shop:shop}),
-  //   headers:{
-  //     'Content-Type': 'application/json'
-  //   }
-  // })
-  
- 
-}
-
 const getListActiveWebHooks = async (headers, shop) => {
-  /* eg of returned obj list
- [ {
-      id: 1039184724139,
-      address: 'https://route-magnet.herokuapp.com/shopify/order/add',
-      topic: 'orders/create',
-      created_at: '2021-06-03T15:43:06-04:00',
-      updated_at: '2021-06-03T15:43:06-04:00',
-      format: 'json',
-      fields: [],
-      metafield_namespaces: [],
-      api_version: '2021-04',
-      private_metafield_namespaces: []
-    }]
-  */
+
   try {
     const list =   await fetchApi({
       method:'get',
@@ -122,34 +75,7 @@ const createWebHook = async (headers, topic, shop, url) => {
     }
 }
 
-const getShopFromBearerHeader = async (req) => {  
-  
-  return new Promise((resolve,reject) =>{
-    try {
-      if(!req.headers.authorization){
-        throw 'malformed header';
-      }
-      const encrypted = req.headers.authorization.replace('Bearer ','');
-  
-     // console.log(secret, process.env.TOKEN_KEY);
-      jwt.verify(encrypted, process.env.SHOPIFY_API_SECRET, (err, decoded) => {
-         // console.log('err', err);
-         // console.log('decoded', decoded);
-         console.log('decoded',decoded);
-         console.log('exp', new Date(decoded.exp) );
-         console.log('nbf', new Date(decoded.nbf));
-         console.log('dest', decoded.dest);
-       const shop = decoded.dest.replace('https://','');
-        return resolve(shop);  
-      });
-      //console.log('flo20DecodedToken: ',decodedToken);
-  } catch (err) {
-     console.log('err1',err); 
-     return resolve('');  // will be seen as an error     
-  }
-  })
- 
-}
+
 async function handler(req, res) {
      console.log('fetch order api handler',req.headers.authorization);
      console.log('req.method',req.method);
@@ -238,12 +164,12 @@ async function handler(req, res) {
 
     } else if(option === 'auto_create') {
       // register Order Creation WebHook
-      const successCreation = await createWebHook(headers,'orders/create', shop, "https://route-magnet.herokuapp.com/shopify/order/add/");
+      const successCreation = await createWebHook(headers,'orders/create', shop, "https://8587ba880439.ngrok.io/shopify/order/add/");
       console.log('successCreation', successCreation);
   
     } else if(option === 'auto_fullfill') {
       // register Order Fullfill WebHook
-      const successCreation = await createWebHook(headers,'orders/fulfilled', shop, "https://route-magnet.herokuapp.com/shopify/order/add/");
+      const successCreation = await createWebHook(headers,'orders/fulfilled', shop, "https://8587ba880439.ngrok.io/shopify/order/add/");
       console.log('successCreation', successCreation);
     }
 

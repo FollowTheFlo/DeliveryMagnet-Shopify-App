@@ -103,8 +103,12 @@ const OrderItem = (props) => {
                 }
                  {                    
                         order && order.displayFulfillmentStatus ?
-                        <Stack.Item fill>{ order.displayFulfillmentStatus} </Stack.Item> :
+                        <div>
+                        <Button onClick={() => pushToRm(order)}>See status</Button>
+                        <Stack.Item fill>{ order.displayFulfillmentStatus} </Stack.Item>
+                        </div> :
                         <Stack.Item fill></Stack.Item>
+                        
                 }
                 <Stack.Item fill>
                 <h3>
@@ -120,7 +124,7 @@ const OrderItem = (props) => {
                             <Button onClick={() => pushToRm(order)}>
                             Push to RM
                           </Button>:
-                          <p>Error</p>
+                          <p>Automatic</p>
                           )
                     }
                     </TextStyle>
