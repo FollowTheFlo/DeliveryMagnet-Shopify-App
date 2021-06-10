@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminContextType } from '../model/context.model';
+import { RmJob, RmJobWithStep } from '../model/jobs.model';
 import { JobOrder } from '../model/orders.model';
 import { WhMode } from '../model/webhooks.model';
 
@@ -14,6 +15,7 @@ const AdminContext = React.createContext({
   onModeSelected: (option,value) => {}, 
   jobOrders:[],
   onJobOrdersChange: (jOrders) => {},
+  onJobOrderPush:(rMOrderWithStep) => {}
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
@@ -58,6 +60,22 @@ export const AdminContextProvider = (props) => {
     setJobOrders(jList);
   }
 
+  const onJobOrderPushHandler = (rmJob:RmJob) => {
+    // note that step is present
+    setJobOrders((prevJobOrders:JobOrder[]) => {
+      const updatedJobOrders = prevJobOrders.slice();
+      const index = updatedJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == rmJob.extId));
+      console.log('index prevJobOrders', index);
+      if(index != -1) {
+        // adding step with null value as new job, not in any itinerary
+        const updatedJob = {...updatedJobOrders[index],job:{...rmJob,step:null}} as JobOrder;            
+        updatedJobOrders[index] = updatedJob;
+        console.log('prev2',prevJobOrders);        
+      }
+      return updatedJobOrders;
+    })
+  }
+
   return (
     <AdminContext.Provider
       value={{
@@ -67,6 +85,7 @@ export const AdminContextProvider = (props) => {
         onDomainChange: domainHandler,
         jobOrders:jobOrders,
         onJobOrdersChange: onJobOrdersHandler,
+        onJobOrderPush: onJobOrderPushHandler,
       }}
     >
       {props.children}

@@ -4,10 +4,12 @@ const axios = require('axios');
 import { useAppBridge } from "@shopify/app-bridge-react";
 import fetchApi from '../../components/utils/fetchApi';
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
-import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
+import {getAccessTokenFromDB, getShopAndBearerHeaders, getShopFromBearerHeader} from '../shared';
+import { WebHook } from "../../model/webhooks.model";
+import { ShopAndBearerHeaders, SuccessResponse } from "../../model/responses.model";
 // const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
 
-const getListActiveWebHooks = async (headers, shop) => {
+const getListActiveWebHooks = async (headers:any, shop:string):Promise<WebHook[]> => {
 
   try {
     const list =   await fetchApi({
@@ -15,9 +17,14 @@ const getListActiveWebHooks = async (headers, shop) => {
     headers,
       url:`https://${shop}/admin/api/2021-04/webhooks.json`,
     })
+    if(!list?.webhooks){
+      console.log('fetch webshooks: no response')
+      return[];
+    }
+    const webHooks = list.webhooks as WebHook[];
   // .get('https://' + shop + '/admin/api/2020-04/webhooks.json', {headers})
     console.log('getListActiveWebHooks',list);
-    if(list && list.webhooks && list.webhooks.length > 0 ) return list.webhooks;
+    if(webHooks?.length > 0 ) return webHooks;
     return [];
   } catch(err) {
     console.log('getActiveList err',err);
@@ -26,7 +33,7 @@ const getListActiveWebHooks = async (headers, shop) => {
   
 }
 
-const deleteAllWebHooks = async (headers, shop) => {
+const deleteAllWebHooks = async (headers, shop):Promise<SuccessResponse> => {
 
   try {
       const list = await getListActiveWebHooks(headers, shop);
@@ -44,19 +51,19 @@ const deleteAllWebHooks = async (headers, shop) => {
           url:`https://${shop}/admin/api/2021-04/webhooks/${list[i].id}.json`})
         console.log('deleteRes', deleteRes.status);
       }
-    } else return true; // return success, if no webhooks, no need to delete anything
+    } else return {success:true,message:'no webhooks registered, no deletion was needed'}; // return success, if no webhooks, no need to delete anything
   } catch(err) {
     console.log('deleteAllWebHooks err', err);
-    return false;
+    return {success:false,message:'exception in deletion request:' + JSON.stringify(err)};
   }
  
-return true;
+  return {success:true,message:'webhooks deleted successfully'};
 }
 
-const createWebHook = async (headers, topic, shop, url) => {
+const createWebHook = async (headers:any, topic:string, shop:string, url:string):Promise<SuccessResponse> => {
   // doc: https://shopify.dev/docs/admin-api/rest/reference/events/webhook?api%5Bversion%5D=2021-04
   try{
-    const regCreateWHRes = await fetchApi({
+    const createWHRes = await fetchApi({
       method:"post",
       url:`https://${shop}/admin/api/2021-04/webhooks.json`, 
       body:JSON.stringify({ 
@@ -66,12 +73,17 @@ const createWebHook = async (headers, topic, shop, url) => {
           format: "json"
         }})
     ,headers})
-    console.log('regCreateWHRes',regCreateWHRes);
+    console.log('regCreateWHRes',createWHRes);
+    if(!createWHRes.webhook) {
+      return {success:false,message:'response obj null'};
+    }
+    const webHook = createWHRes.webhook as WebHook;
     // console.log('regCreateWHRes status',regCreateWHRes.webhook);
     // for response format see https://shopify.dev/docs/admin-api/rest/reference/events/webhook
-    return regCreateWHRes && regCreateWHRes.webhook && regCreateWHRes.webhook.id  ?  true : false;
+    return webHook.id  ?  {success:true,message:'success'} : {success:false,message:'webhook has no id'};
     } catch(err) {
       console.log('err', err);
+      return {success:false,message:'exception:' + err};
     }
 }
 
@@ -97,28 +109,37 @@ async function handler(req, res) {
     console.log('option', option);
       
    
-  const shop = await getShopFromBearerHeader(req);
+  // const shop = await getShopFromBearerHeader(req);
   // if(!shop){
   //   console.log('no shop');
   //   res.status(200).json({success:false,message:'Shop value null'});
   //   return;
   // }
-  console.log('shop response', shop);
+  // console.log('shop response', shop);
 
-  const sessionToken = req.headers.authorization.replace('Bearer ','');
+  // const sessionToken = req.headers.authorization.replace('Bearer ','');
   
-    const accessToken = await getAccessTokenFromDB(sessionToken);
-    if(!accessToken) {
-      res.status(200).json({success:false,message:'accesstoken value null'});
-      return;
-    }
-    console.log('accessToken response', accessToken);
+  //   const accessToken = await getAccessTokenFromDB(sessionToken);
+  //   if(!accessToken) {
+  //     res.status(200).json({success:false,message:'accessToken value null'});
+  //     return;
+  //   }
+  //   console.log('accessToken response', accessToken);
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Shopify-Access-Token': accessToken
-    }
-
+  //   const headers = {
+  //     'Content-Type': 'application/json',
+  //     'X-Shopify-Access-Token': accessToken
+  //   }
+  let shopAndBearerHeaders:ShopAndBearerHeaders = null;
+  try {
+    shopAndBearerHeaders = await getShopAndBearerHeaders(req);
+  } catch(err) {
+    console.log(err);
+    // error is type SuccessResult
+    res.status(200).json(err);
+  }
+    
+  const {shop,headers} = shopAndBearerHeaders;
   
     const activeListAtStart = await getListActiveWebHooks(headers, shop)
     console.log('activeList', activeListAtStart);
@@ -142,37 +163,35 @@ async function handler(req, res) {
       return;
     }
 
+    // if List is not null, trigger deletion action
     if(activeListAtStart && activeListAtStart.length > 0){
       const successDeletion = await deleteAllWebHooks(headers, shop);
       console.log('delete success', successDeletion);
 
-      if(!successDeletion) {
-        res.status(200).json({success:false, message:'Error in WebHooks deletion'});
+      if(!successDeletion.success) {
+        res.status(200).json({success:false, message:successDeletion.message});
         return;
       };
     } else (console.log('list already null, no need delete'))
 
-    if(option === 'list') {
-      const activeListAtEnd = await getListActiveWebHooks(headers, shop)
-      console.log('activeList', activeListAtEnd);
-      res.status(200).json({success:true,message:''});
-
-    } else if(option === 'manual') {
+    // at this stage, all webhooks are deleted, now processing actions depending the option
+    if(option === 'manual') {
       
       // do nothing as wbehooks are already deleted
-      console.log('manual, delete all webhooks');   
+      console.log('manual, no webhooks');   
 
     } else if(option === 'auto_create') {
       // register Order Creation WebHook
-      const successCreation = await createWebHook(headers,'orders/create', shop, "https://8587ba880439.ngrok.io/shopify/order/add/");
-      console.log('successCreation', successCreation);
+      const createResponse = await createWebHook(headers,'orders/create', shop, `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add/`);
+      console.log('successCreation', createResponse);
   
     } else if(option === 'auto_fullfill') {
       // register Order Fullfill WebHook
-      const successCreation = await createWebHook(headers,'orders/fulfilled', shop, "https://8587ba880439.ngrok.io/shopify/order/add/");
-      console.log('successCreation', successCreation);
+      const fulfillResponse = await createWebHook(headers,'orders/fulfilled', shop, `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add/`);
+      console.log('successCreation', fulfillResponse);
     }
 
+    // check the list processing actions for review purpose
     const activeListAtEnd = await getListActiveWebHooks(headers, shop)
     console.log('activeList', activeListAtEnd);
 

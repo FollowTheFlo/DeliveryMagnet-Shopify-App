@@ -3,10 +3,8 @@ export interface FulFillmentInput {
     orderId: string;
 }
 
-export interface ShopifyOrderFullFillments {
-    fulfillments: [
-        {
-          id: number,
+export interface ShopifyOrderFullFillment {
+  id: number,
           order_id: number,
           status: string,
           created_at: string,
@@ -74,6 +72,9 @@ export interface ShopifyOrderFullFillments {
           receipt: any,
           name: string,
           admin_graphql_api_id: string
-        }
+}
+export interface ShopifyOrderFullFillments {
+    fulfillments: ShopifyOrderFullFillment[
+       
       ]
 }

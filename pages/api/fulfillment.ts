@@ -1,7 +1,7 @@
 import fetchApi from '../../components/utils/fetchApi';
 import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { FulFillmentInput, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { FulFillmentInput, ShopifyOrderFullFillment, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log('fulfillment api handler',req.headers.authorization);
@@ -67,20 +67,24 @@ const getOrderFulfillment = async (headers,shop,orderId):Promise<ShopifyOrderFul
 const postOrderFullfillment = async (headers,shop,orderId) => {
     console.log('postOrderFullfillment');
     try {
-        const fulfillment = await fetchApi({
+        const response = await fetchApi({
           method:'post',
           headers,
           url:`https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,
           body:JSON.stringify(
             {fulfillment: {              
-                location_id: 59096170667               
+                location_id: 59096170667             
               }}
           )      
     },
         )
         //  body:JSON.stringify({fulfillment: { location_id: 123456789 }})
       // .get('https://' + shop + '/admin/api/2020-04/webhooks.json', {headers})
-        console.log('fulfillment',JSON.stringify(fulfillment));
+        console.log('fulfillment',JSON.stringify(response));
+        if(!response.fulfillment)return false;
+
+        const fulfillment = response.fulfillment as ShopifyOrderFullFillment;
+
        return true;
       } catch(err) {
         console.log('fulfillment err',err);

@@ -1,11 +1,13 @@
 import fetchApi from '../components/utils/fetchApi';
-const jwt = require('jsonwebtoken');
+import * as jwt from 'jsonwebtoken';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { ShopAndBearerHeaders, SuccessResponse, TokenPayloadResponse } from '../model/responses.model';
 
-const getAccessTokenFromDB = async (sessionToken) => {
+const getAccessTokenFromDB = async (sessionToken:string):Promise<string|null> => {
     console.log('getAccessTokenFromDB');
   
     try{
-      const response = await fetchApi(
+      const response:TokenPayloadResponse = await fetchApi(
         {
           method:'get',
           url:`${process.env.RM_SERVER_URL}/shopify/access_token`,
@@ -26,7 +28,7 @@ const getAccessTokenFromDB = async (sessionToken) => {
 }
 
 
-const getShopFromBearerHeader = async (req) => {  
+const getShopFromBearerHeader = async (req:NextApiRequest):Promise<string> => {  
     console.log('getShopFromBearerHeader');
     return new Promise((resolve,reject) =>{
       try {
@@ -34,9 +36,8 @@ const getShopFromBearerHeader = async (req) => {
           throw 'malformed header';
         }
         const encrypted = req.headers.authorization.replace('Bearer ','');
-    
        // console.log(secret, process.env.TOKEN_KEY);
-        jwt.verify(encrypted, process.env.SHOPIFY_API_SECRET, (err, decoded) => {
+        jwt.verify(encrypted, process.env.SHOPIFY_API_SECRET, (err, decoded:any) => {
            // console.log('err', err);
            // console.log('decoded', decoded);
            console.log('decoded',decoded);
@@ -54,5 +55,30 @@ const getShopFromBearerHeader = async (req) => {
     }) 
   }
 
-  export {getAccessTokenFromDB, getShopFromBearerHeader}
+  const getShopAndBearerHeaders = async (req:NextApiRequest):Promise<ShopAndBearerHeaders> => {
+    console.log('getShopAndBearerHeaders');
+    const shop = await getShopFromBearerHeader(req);
+    if(!shop){
+      console.log('no shop');     
+      throw( {success:false,message:'no shop'});
+    }
+    console.log('shop response', shop);
+  
+    const sessionToken = req.headers.authorization.replace('Bearer ','');
+    
+      const accessToken = await getAccessTokenFromDB(sessionToken);
+      if(!accessToken) {        
+        throw({success:false,message:'accessToken value null'});
+      }
+      console.log('accessToken response', accessToken);
+  
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': accessToken
+      }
+
+      return {shop,headers};
+  }
+
+  export {getAccessTokenFromDB, getShopFromBearerHeader, getShopAndBearerHeaders}
 

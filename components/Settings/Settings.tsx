@@ -18,15 +18,22 @@ import axios from 'axios';
 import AdminContext from '../../store/admin-context';
 
 
-const Settings = (props) => {
+const Settings:React.FC = (props) => {
 
   //  const [value, setValue] = useState('manual');
     const adminCtx = useContext(AdminContext);
 
     useEffect(() => {
       console.log('useEffect');
-      // at initial time, get the actual option
-      getOptionValuefromShopify();
+      async function getOption() {
+        const res = await getOptionValuefromShopify();
+        console.log('res', res);
+      }
+      // at initial time, get the actual option, only run once, which means at initial state where all options are false
+      if(!adminCtx.mode.auto_create && !adminCtx.mode.auto_fullfill && !adminCtx.mode.manual) {       
+        getOption();
+      }
+     
     },[])
 
     const handleChange = useCallback(
@@ -46,25 +53,27 @@ const Settings = (props) => {
       [],
     );
 
-    const getOptionValuefromShopify = () => {
+    const getOptionValuefromShopify = ():Promise<SuccessResponse> => {
       // reach our API then server will check Shopify webhooks and determine which option is being used
-      axios.post('/api/webhooks',{option:"list"})
+      return axios.post('/api/webhooks',{option:"list"})
       .then(response => {
         console.log('response webhooks api', response.data);
-        if(!response.data) return;
+        if(!response.data) return {success:false,message:'empty response'};
 
         const data = response.data as SuccessResponse;
         if(!data.success) {
           console.log('fail',data.message ?? 'empty message');
           
           // don't set any option
-          return;
+          return data;
         }
         // option value is return in message property when success is true        
         adminCtx.onModeSelected(data.message,true);
+        return {success:true,message:'mode found succesfully'};
       })
       .catch(err => {
         console.log('err webhook list:', err);
+        return {success:false,message:'error' + err};
       })
     }
   

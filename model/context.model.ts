@@ -1,3 +1,4 @@
+import { RmJob, RmJobWithStep } from "./jobs.model";
 import { JobOrder } from "./orders.model";
 import { WhMode } from "./webhooks.model";
 
@@ -8,5 +9,5 @@ export interface AdminContextType{
     onDomainChange:(d:string) => void;
     jobOrders: JobOrder[];
     onJobOrdersChange:(j:JobOrder[]) => void;
-
+    onJobOrderPush:(j:RmJob) => void;
 }

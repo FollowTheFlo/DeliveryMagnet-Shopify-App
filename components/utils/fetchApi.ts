@@ -1,6 +1,6 @@
 
 type FetchApiProps = {
-   method:'get'|'post',
+   method:'get'|'post'|'delete'|'put'|'patch',
    url:string,
    body?:any, //optional when using get, can be any JSON object so set as any
    headers?:any, // if empty set default with JSOn content-type and no token

@@ -27,6 +27,7 @@ import fetchApi from '../utils/fetchApi';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../model/orders.model';
 import { RmJob, RmJobWithStep } from '../../model/jobs.model';
 import { AdminContextType } from '../../model/context.model';
+import { SuccessResponse } from '../../model/responses.model';
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -150,12 +151,6 @@ console.log('flo OrderList');
         }
 
 
-        // const  getDomain = () => {
-        //   console.log('getDomain');
-        //   const { loading, error, data } = useQuery(GET_DOMAIN);
-        
-        // }
-
         const onRefresh = () => {
             console.log('refresh');
             // const res = client.resetStore().then(res => {
@@ -189,19 +184,38 @@ console.log('flo OrderList');
                 return;
               }
               const job = response as RmJob;
+
               
-                // get previous state
-                const prevJobOrders = [...adminCtx.jobOrders]; 
-                console.log('prev1',prevJobOrders);
-                const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
-                console.log('index prevJobOrders', index);
-                if(index != -1) {
-                  const updatedJob = {...prevJobOrders[index],job:{...job}} as JobOrder;            
-                  prevJobOrders[index] = updatedJob;
-                  console.log('prev2',prevJobOrders);  
-                }
-                adminCtx.onJobOrdersChange([...prevJobOrders]);
+                // // get previous state
+                // const prevJobOrders = [...adminCtx.jobOrders]; 
+                // console.log('prev1',prevJobOrders);
+                // const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
+                // console.log('index prevJobOrders', index);
+                // if(index != -1) {
+                //   const updatedJob = {...prevJobOrders[index],job:{...job,step:null}} as JobOrder;            
+                //   prevJobOrders[index] = updatedJob;
+                //   console.log('prev2',prevJobOrders);  
+                // }
+                adminCtx.onJobOrderPush({...job});
             })
+        }
+
+        const onFulfillOneOrder = (o:JobOrder) => {
+          const orderId = o.id.replace('gid://shopify/Order/','') 
+          axios.post('/api/fulfillment',{action:'test',orderId})
+          .then(response => {
+            const result = response?.data as SuccessResponse;
+
+            console.log('response webhooks api', result);
+            console.log('response fulfillment api', response);
+            if(result.success) {
+              onRefresh();
+            }
+                      
+          })
+          .catch(err => {
+            console.log('err fulfillment', err);
+          })
         }
   
       return (
@@ -248,7 +262,8 @@ console.log('flo OrderList');
                       key={id}
                       id={id}
                       order={item}
-                      onPush={onPushToRM}
+                      onPushOrder={onPushToRM}
+                      onFulfillOrder={onFulfillOneOrder}
                       isManualMode={adminCtx.mode.manual}             
                     />
                    );

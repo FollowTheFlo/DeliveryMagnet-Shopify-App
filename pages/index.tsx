@@ -24,7 +24,7 @@ const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 const Index = (props) => {
 
   const emptyState = !store.get('ids');
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState<number>(0);
   const tabs = [
     {
       id: 'orders',
@@ -43,7 +43,7 @@ const Index = (props) => {
   }, [])
 
   const handleTabChange = useCallback(
-    (selectedTabIndex) => setTabIndex(selectedTabIndex),
+    (selectedTabIndex:number) => setTabIndex(selectedTabIndex),
     [],
   );
 

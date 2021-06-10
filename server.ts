@@ -1,4 +1,7 @@
  // require('isomorphic-fetch');
+
+// import { SuccessResponse } from "./model/responses.model";
+
  // @ts-ignore
 const dotenv = require('dotenv');
 const Koa = require('koa');
@@ -45,7 +48,7 @@ const saveAccessTokenInDB = (shop,accessToken) => {
     exp:new Date().getTime() + 60000
   }), process.env.SHOPIFY_API_SECRET);
   // no need post as shop and token are encrypted in header
-  fetch(
+  return fetch(
     `${process.env.RM_SERVER_URL}/shopify/access_token/save`,
     { method:'get',
       headers: {      
@@ -60,17 +63,20 @@ const saveAccessTokenInDB = (shop,accessToken) => {
         console.log('in data 200');
         return data.json();   
       } else {
-      console.log('in else');
+      console.log('error saving token');
         return data.text();
       }             
     })
     .then(val => {
       console.log('val',val);
-      // return val
+       return val;
     })
     .catch(err => {
       console.log('err',err)
-    // return err;
+     return {
+       success:false,
+       message:JSON.stringify(err),
+     }
     })  
 }
 
@@ -88,7 +94,12 @@ app.prepare().then(() => {
            console.log('shop', shop);
            console.log('env var', process.env.RM_SERVER_URL);
          
-           saveAccessTokenInDB(shop,accessToken);        
+           const response = await saveAccessTokenInDB(shop,accessToken);
+           console.log('response save token', response);
+           if(!response.success) {
+             if(response.message)(console.log('error saving token, message:',response.message))
+             return;
+           }
       
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
         ctx.redirect(`/?shop=${shop}`);

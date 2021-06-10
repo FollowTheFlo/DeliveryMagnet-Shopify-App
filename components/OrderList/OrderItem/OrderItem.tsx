@@ -11,26 +11,36 @@ import { Card,
     Badge,
 } from '@shopify/polaris';
 
+import styles from './OrderItem.module.css';
+
 
 import React from 'react';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.model';
 
 type OrderItemProps = {
+    key: string;
     id: string;
     order:JobOrder;
-    onPush:(o:WHOrder)=>void;
+    onPushOrder:(o:WHOrder)=>void;
     isManualMode:boolean;
+    onFulfillOrder:(o:JobOrder)=>void;
 }
 
 const OrderItem = (props:OrderItemProps) => {
 
-    const {order, onPush, isManualMode} = props;
+    const {order, onPushOrder, isManualMode, onFulfillOrder} = props;
 
     const pushToRm = (orderSelection:JobOrder) => {
         console.log('pushToRm orderId', orderSelection);
         const whOrder = convertGraphQlToWebHookOrder(orderSelection);        
-        onPush(whOrder);
-       
+        onPushOrder(whOrder);       
+    }
+
+    const fulfillOrder = (o:JobOrder) => {
+        console.log('fulfillOrder', o);
+        if(o.displayFulfillmentStatus !== 'UNFULFILLED') return;
+
+        onFulfillOrder(o);
     }
 
     const convertGraphQlToWebHookOrder = (o:JobOrder):WHOrder => {
@@ -92,6 +102,18 @@ const OrderItem = (props:OrderItemProps) => {
             }
         }
     
+   const fulFillmentBlock = (o:JobOrder) => {
+    if(o.displayFulfillmentStatus === 'UNFULFILLED') {
+        return (
+            <Stack.Item fill>
+             <Button onClick={() => fulfillOrder(order)}>FulFill</Button>  
+             </Stack.Item>
+        );
+    }
+    return  (
+    <Stack.Item fill>{ order.displayFulfillmentStatus} </Stack.Item>
+    )
+   }
 
 
     return (
@@ -106,34 +128,30 @@ const OrderItem = (props:OrderItemProps) => {
                 </h3>
                 </Stack.Item>                
                 {                    
-                        order && order.job && order.job.step && order.job.step.customerLink ?
-                        <Stack.Item fill><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </Stack.Item> :
+                        order?.job?.step?.customerLink ?
+                        <Stack.Item fill><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </Stack.Item>
+                        :
                         <Stack.Item fill></Stack.Item>
                 }
                  {                    
-                        order && order.displayFulfillmentStatus ?
-                        <div>
-                        <Button onClick={() => pushToRm(order)}>See status</Button>
-                        <Stack.Item fill>{ order.displayFulfillmentStatus} </Stack.Item>
-                        </div> :
-                        <Stack.Item fill></Stack.Item>
-                        
+                       fulFillmentBlock(order)                        
                 }
                 <Stack.Item fill>
                 <h3>
                     <TextStyle variation="strong">
                     
                     {
-                     order && order.job &&  order && order.job.status ?
+                     order?.job?.status ?
                         <React.Fragment>
                             <Badge>{order.job.status}</Badge>                             
                        </React.Fragment>
                          :
-                        (order && order.id && isManualMode ?
+                        (order?.id ?
                             <Button onClick={() => pushToRm(order)}>
                             Push to RM
-                          </Button>:
-                          <p>Automatic</p>
+                          </Button>
+                          :
+                            <p>No Id</p>
                           )
                     }
                     </TextStyle>
