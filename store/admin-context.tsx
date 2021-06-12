@@ -15,7 +15,9 @@ const AdminContext = React.createContext({
   onModeSelected: (option,value) => {}, 
   jobOrders:[],
   onJobOrdersChange: (jOrders) => {},
-  onJobOrderPush:(rMOrderWithStep) => {}
+  onJobOrderPush:(rMOrderWithStep) => {},
+  isIntegrated:false,
+  onIntegrationChange: (value) => {},
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
@@ -29,7 +31,7 @@ export const AdminContextProvider = (props) => {
  
   const [domain, setDomain] = useState<string>('');
   const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
-
+  const [isIntegrated, setIsIntegrated] = useState<boolean>(false); 
   useEffect(() => {
     // get mode from server
     console.log('admin context');
@@ -76,6 +78,11 @@ export const AdminContextProvider = (props) => {
     })
   }
 
+  const onIntegrationHandler = (val:boolean) => {
+    console.log('onIntegrationHandler:', val);
+    setIsIntegrated(val);
+  }
+
   return (
     <AdminContext.Provider
       value={{
@@ -86,6 +93,8 @@ export const AdminContextProvider = (props) => {
         jobOrders:jobOrders,
         onJobOrdersChange: onJobOrdersHandler,
         onJobOrderPush: onJobOrderPushHandler,
+        isIntegrated: isIntegrated,
+        onIntegrationChange: onIntegrationHandler,
       }}
     >
       {props.children}

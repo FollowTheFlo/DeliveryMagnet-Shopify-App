@@ -64,25 +64,6 @@ function MyProvider(pageProps) {
    console.log('MyProvider1');
    const app = useAppBridge();
    console.log('MyProvider2');
-      // const app = this.context;
-  
-    //   const defaultOptions = {
-    //     watchQuery: {
-    //       fetchPolicy: 'network-only',
-    //       errorPolicy: 'ignore',
-    //     },
-    //     query: {
-    //       fetchPolicy: 'network-only',
-    //       errorPolicy: 'all',
-    //     },
-    //   }
-    
-    // const client = new ApolloClient({
-    //   link: concat(authMiddleware, httpLink),
-    //   cache: new InMemoryCache(),
-    //   defaultOptions: defaultOptions,
-    
-    // });
       const client = new ApolloClient({
         fetch: userLoggedInFetch(app),
         fetchOptions: {         
@@ -94,8 +75,7 @@ function MyProvider(pageProps) {
         <ApolloProvider client={client}>
         {pageProps.children}
       </ApolloProvider>
-      );
-    
+      );    
   }
 
 function MyApp(props){
@@ -112,16 +92,14 @@ console.log('API_KEY',process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);
         </Head>
         <Provider config={config}>
           <ClientRouter />
-          <AppProvider i18n={translations}>
-          
+          <AppProvider i18n={translations}>          
             <MyProvider>
               <AxiosInterceptor>
                 <AdminContextProvider>
                   <Component {...pageProps} />
                 </AdminContextProvider>
               </AxiosInterceptor>
-            </MyProvider>
-           
+            </MyProvider>           
           </AppProvider>
         </Provider>
       </React.Fragment>

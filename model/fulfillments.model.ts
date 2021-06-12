@@ -73,8 +73,37 @@ export interface ShopifyOrderFullFillment {
           name: string,
           admin_graphql_api_id: string
 }
+
 export interface ShopifyOrderFullFillments {
     fulfillments: ShopifyOrderFullFillment[
        
       ]
+}
+
+export interface FulfillmentApiInput {
+  fulfillment:{
+    location_id:number;
+    tracking_number?:string;
+    tracking_company?:string;
+    message?:string;
+    notify_customer?:boolean;
+    shipment_status?:string;
+    tracking_urls?:string[];
+    line_items?:[{
+      id:number;
+      quantity?:number;
+    }]
+    tracking_info? : {
+      number:number;
+      url:string;
+      company:string;
+    }
+    line_items_by_fulfillment_order? : {
+      fulfillment_order_id:number;
+      fulfillment_order_line_items? : {
+        id:number;
+        quantity?:number;
+      }
+    }
+  }
 }

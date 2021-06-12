@@ -10,4 +10,6 @@ export interface AdminContextType{
     jobOrders: JobOrder[];
     onJobOrdersChange:(j:JobOrder[]) => void;
     onJobOrderPush:(j:RmJob) => void;
+    isIntegrated:boolean;
+    onIntegrationChange: (value:boolean) => void;
 }

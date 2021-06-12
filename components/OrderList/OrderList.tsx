@@ -32,7 +32,7 @@ import { SuccessResponse } from '../../model/responses.model';
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
 
-const OrderList =  (props) => {
+const OrderList:React.FC =  (props) => {
 console.log('flo OrderList');
 // const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;

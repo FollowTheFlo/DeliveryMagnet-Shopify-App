@@ -108,28 +108,7 @@ async function handler(req, res) {
     }
     console.log('option', option);
       
-   
-  // const shop = await getShopFromBearerHeader(req);
-  // if(!shop){
-  //   console.log('no shop');
-  //   res.status(200).json({success:false,message:'Shop value null'});
-  //   return;
-  // }
-  // console.log('shop response', shop);
 
-  // const sessionToken = req.headers.authorization.replace('Bearer ','');
-  
-  //   const accessToken = await getAccessTokenFromDB(sessionToken);
-  //   if(!accessToken) {
-  //     res.status(200).json({success:false,message:'accessToken value null'});
-  //     return;
-  //   }
-  //   console.log('accessToken response', accessToken);
-
-  //   const headers = {
-  //     'Content-Type': 'application/json',
-  //     'X-Shopify-Access-Token': accessToken
-  //   }
   let shopAndBearerHeaders:ShopAndBearerHeaders = null;
   try {
     shopAndBearerHeaders = await getShopAndBearerHeaders(req);

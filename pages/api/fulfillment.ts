@@ -1,7 +1,7 @@
 import fetchApi from '../../components/utils/fetchApi';
 import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { FulFillmentInput, ShopifyOrderFullFillment, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
+import { FulfillmentApiInput, FulFillmentInput, ShopifyOrderFullFillment, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log('fulfillment api handler',req.headers.authorization);
@@ -67,15 +67,21 @@ const getOrderFulfillment = async (headers,shop,orderId):Promise<ShopifyOrderFul
 const postOrderFullfillment = async (headers,shop,orderId) => {
     console.log('postOrderFullfillment');
     try {
+      const fulfillmentApiInput:FulfillmentApiInput = {
+        fulfillment:{
+        location_id:59096170667,
+        notify_customer:false,
+        tracking_company:'RouteMagnet',
+        message:'Delivery managed by RM',
+        shipment_status:'ready_for_pickup',
+          tracking_urls:['https://app.routemagnet.com/delivery/60ad045a047fb50017f81841']
+      }
+    };
         const response = await fetchApi({
           method:'post',
           headers,
           url:`https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,
-          body:JSON.stringify(
-            {fulfillment: {              
-                location_id: 59096170667             
-              }}
-          )      
+          body:JSON.stringify(fulfillmentApiInput)      
     },
         )
         //  body:JSON.stringify({fulfillment: { location_id: 123456789 }})

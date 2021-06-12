@@ -124,8 +124,11 @@ app.prepare().then(() => {
   router.post("/api/(.*)", async (ctx) => {
     console.log('api route post');
     await handle(ctx.req, ctx.res);
-  //  ctx.respond = false;
-   // ctx.res.statusCode = 200;
+  });
+
+  router.get("/api/(.*)", async (ctx) => {
+    console.log('api route get');
+    await handle(ctx.req, ctx.res);
   });
 
   // router.get("/api/(.*)", async (ctx) => {

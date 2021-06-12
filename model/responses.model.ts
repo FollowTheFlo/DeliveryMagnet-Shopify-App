@@ -4,9 +4,10 @@ export interface SuccessResponse {
 }
 
 export interface TokenPayloadResponse {
+    success:boolean;
     shop:string;
     accessToken:string;
-    error:string;
+    message:string;
 }
 
 export interface ShopAndBearerHeaders {

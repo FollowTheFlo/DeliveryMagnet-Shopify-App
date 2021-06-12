@@ -16,8 +16,8 @@ const getAccessTokenFromDB = async (sessionToken:string):Promise<string|null> =>
             'Authorization': `Bearer ${sessionToken}`
           }
         });
-        if(!response || response.error !== '' || !response.accessToken) {
-          console.log('accessTokenResponse error', response.error);
+        if(!response || !response.success! || !response.accessToken) {
+          console.log('accessTokenResponse error', response.message);
           return null;
         }
       return response.accessToken;

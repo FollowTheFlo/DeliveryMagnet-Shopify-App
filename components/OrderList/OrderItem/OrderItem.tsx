@@ -16,6 +16,7 @@ import styles from './OrderItem.module.css';
 
 import React from 'react';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.model';
+import fetchApi from '../../utils/fetchApi';
 
 type OrderItemProps = {
     key: string;
@@ -115,7 +116,6 @@ const OrderItem = (props:OrderItemProps) => {
     )
    }
 
-
     return (
         // @ts-ignore
         <ResourceList.Item>
@@ -126,7 +126,7 @@ const OrderItem = (props:OrderItemProps) => {
                     {order.name}
                     </TextStyle>
                 </h3>
-                </Stack.Item>                
+                </Stack.Item>                      
                 {                    
                         order?.job?.step?.customerLink ?
                         <Stack.Item fill><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </Stack.Item>
