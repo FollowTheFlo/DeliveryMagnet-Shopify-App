@@ -19,7 +19,7 @@ import { Card,
   Badge,
 } from '@shopify/polaris';
 import Inscription from '../components/Inscription/Inscription';
-import { getAccessTokenFromDB } from './shared';
+import { getAccessTokenFromDB } from '../shared';
 import axios from 'axios';
 import { SuccessResponse } from '../model/responses.model';
 import AdminContext from '../store/admin-context';
