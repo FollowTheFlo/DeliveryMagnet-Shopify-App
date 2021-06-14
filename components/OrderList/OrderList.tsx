@@ -1,5 +1,9 @@
 import styles from './OrderList.module.css';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
+// require("dotenv").config();
+const axios = require('axios');
+import AdminContext from '../../store/admin-context'
+import { authenticatedFetch } from '@shopify/app-bridge-utils';
 import gql from 'graphql-tag';
 import { Query, useQuery, useLazyQuery, useApolloClient } from 'react-apollo';
 import { Card,
@@ -20,31 +24,50 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { Context, useAppBridge } from '@shopify/app-bridge-react';
 import { GET_DOMAIN, GET_ORDERS, GET_PRODUCTS_BY_ID } from '../utils/graphQlQueries'
 import fetchApi from '../utils/fetchApi';
+import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../model/orders.model';
+import { RmJob, RmJobWithStep } from '../../model/jobs.model';
+import { AdminContextType } from '../../model/context.model';
+import { SuccessResponse } from '../../model/responses.model';
+
+// const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
 
-const OrderList = (props) => {
+const OrderList:React.FC =  (props) => {
 console.log('flo OrderList');
-
+// const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
+// const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 // const client = useApolloClient();
    // const contextType = Context;
+
+
    const client = useApolloClient();
-    const app = useAppBridge();
-    const [domain, setDomain] = useState('flo domain');
+   
+    // const [domain, setDomain] = useState('flo domain');
+    const adminCtx = useContext(AdminContext);
     
+   
     // JobOrder is combination of Shopify Order with job property containing RouteMagnet Job obj
     // fetching jobOrders will need graphql Orders request to shopify + REST request to RM jobs
-    const [jobOrders, setJobOrders] = useState([]);
-    const [refreshDate, setRefreshDate] = useState('');
+    // const [jobOrders, setJobOrders] = useState([]);
+    const [refreshDate, setRefreshDate] = useState<string>('');
     // inform on loading stage: requesting data on shopify or RM
-    const [loadingMessage, setLoadingMessage] = useState('');
-    const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
+    const [loadingMessage, setLoadingMessage] = useState<string>('');
+    // const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
     
+
     useEffect(() => {
+
+      if(adminCtx.domain) {
+        console.log('domain already set');
+        return;
+      }     
+
       console.log('flo useEffect');
+            
       client.query({ query: GET_DOMAIN }).then(domain => {
         console.log('domain', domain.data.shop.primaryDomain.url);
         if(domain.data.shop.primaryDomain.url){
-          setDomain(domain.data.shop.primaryDomain.url);
+          adminCtx.onDomainChange(domain.data.shop.primaryDomain.url);
           fetchJobOrders();
         }
       })
@@ -62,27 +85,28 @@ console.log('flo OrderList');
       })     
       .then(data => {
         console.log('return data', data);        
-        setJobOrders(data);
+        adminCtx.onJobOrdersChange(data);
         setRefreshDate(new Date().toLocaleString());
         setLoadingMessage('');
       })
       .catch(errMessage => {
         console.log('err2', errMessage);
-        setJobOrders([]);
+        adminCtx.onJobOrdersChange([]);
         setLoadingMessage(errMessage);
       })
     }
 
 
-        const queryShopifyOrders = () => {
+        const queryShopifyOrders = ():Promise<ShopifyGraphQLOrder[]> => {
             console.log('queryShopifyOrders');
            
           // Graphl Apollo client
           // fetch Shopify orders
-          return client.query({ query: GET_ORDERS })
+          return client.query({ query: GET_ORDERS, fetchPolicy: "no-cache" })
           .then(data => {
+            // go through encapsulation data.data.orders.edges
             console.log('ordersdata', data);
-            const ordersList = data.data.orders.edges.map(o => o.node);
+            const ordersList = data.data.orders.edges.map(o => o.node) as ShopifyGraphQLOrder[];
             return ordersList;
           })
           .catch(err => {
@@ -93,7 +117,7 @@ console.log('flo OrderList');
           })
         }
 
-        const queryRmOrders = (ordersList) => {
+        const queryRmOrders = (ordersList:ShopifyGraphQLOrder[]):Promise<JobOrder[]> => {
           console.log('queryRmOrders', ordersList);
           // const {orderIDsList, ordersList} = params;
 
@@ -108,18 +132,15 @@ console.log('flo OrderList');
         return fetchApi({
           method:'post',
           body:JSON.stringify(obj),
-          url:'https://route-magnet.herokuapp.com/shopify/orderslist/status',
+          url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
         })
-          .then(jobs => {
+          .then((jobs:RmJobWithStep[]) => {
             console.log('RmOrders:',JSON.stringify(jobs));
            // add associated RM job data to each shopify order, we have now all data we need: status on RM, track link...
            // list order item index order is ensure to be same as RM job index order, thus we map by index
-            const fullJobOrderList = ordersList.map((order,i) => ({...order, job:jobs[i]}));      
+            const fullJobOrderList:JobOrder[] = ordersList.map((order,i) => ({...order, job:jobs[i]}));      
          //   setJobOrders(fullJobOrderList.slice());
             return fullJobOrderList.slice();
-          
-           
-           
           })
           .catch(err => {
             console.log('err', err);
@@ -130,27 +151,71 @@ console.log('flo OrderList');
         }
 
 
-        const  getDomain = () => {
-          console.log('getDomain');
-          const { loading, error, data } = useQuery(GET_DOMAIN);
-        
-        }
-
         const onRefresh = () => {
             console.log('refresh');
-            fetchJobOrders();
+            // const res = client.resetStore().then(res => {
+            //   console.log('res apollo', res);
+              fetchJobOrders();
+           // })
+           
         }
 
-        const onPushToRM = (whOrder) => {
+
+        const onPushToRM = (whOrder:WHOrder) => {
           console.log('onPushToRM', whOrder);
+          // axios.post('/api/fulfillment',{action:'test',orderId:whOrder.id})
+          // .then(response => {
+          //   console.log('response fulfillment api', response);           
+          // })
+          // .catch(err => {
+          //   console.log('err fulfillment', err);
+          // })
+        
           fetchApi({
             method:'post',
             body:JSON.stringify(whOrder),
-            url:'https://route-magnet.herokuapp.com/shopify/order/add',
+            url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
           })
             .then(response => {
-              console.log('response', response);
+              console.log('response job', response);
+              // if error, object returned has property error
+              if(response.error) {
+                console.log(response.error);
+                return;
+              }
+              const job = response as RmJob;
+
+              
+                // // get previous state
+                // const prevJobOrders = [...adminCtx.jobOrders]; 
+                // console.log('prev1',prevJobOrders);
+                // const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
+                // console.log('index prevJobOrders', index);
+                // if(index != -1) {
+                //   const updatedJob = {...prevJobOrders[index],job:{...job,step:null}} as JobOrder;            
+                //   prevJobOrders[index] = updatedJob;
+                //   console.log('prev2',prevJobOrders);  
+                // }
+                adminCtx.onJobOrderPush({...job});
             })
+        }
+
+        const onFulfillOneOrder = (o:JobOrder) => {
+          const orderId = o.id.replace('gid://shopify/Order/','') 
+          axios.post('/api/fulfillment',{action:'test',orderId})
+          .then(response => {
+            const result = response?.data as SuccessResponse;
+
+            console.log('response webhooks api', result);
+            console.log('response fulfillment api', response);
+            if(result.success) {
+              onRefresh();
+            }
+                      
+          })
+          .catch(err => {
+            console.log('err fulfillment', err);
+          })
         }
   
       return (
@@ -166,7 +231,7 @@ console.log('flo OrderList');
                     { 
                       loadingMessage && <div  className={styles.refreshMessage}>{loadingMessage}</div>
                     }
-                 <p>Shop:{domain}</p>
+                 <p>Shop:{adminCtx.domain}</p>
                  {/* <ResourceList>
                     <Stack>
                         <Stack.Item fill>
@@ -184,10 +249,10 @@ console.log('flo OrderList');
                         </Stack.Item>
                     </Stack>
                  </ResourceList> */}
-              { jobOrders && jobOrders.length > 0 && <ResourceList
+              { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 && <ResourceList
                 showHeader={true}
                 resourceName={{ singular: 'Order', plural: 'Orders' }}
-                items={jobOrders}
+                items={adminCtx.jobOrders}
                 renderItem={(item,itemId, index) => {
                   const {id, name} = item;
 
@@ -197,7 +262,9 @@ console.log('flo OrderList');
                       key={id}
                       id={id}
                       order={item}
-                      onPush={onPushToRM}               
+                      onPushOrder={onPushToRM}
+                      onFulfillOrder={onFulfillOneOrder}
+                      isManualMode={adminCtx.mode.manual}             
                     />
                    );
                  }}

@@ -1,4 +1,8 @@
-require('isomorphic-fetch');
+ // require('isomorphic-fetch');
+
+// import { SuccessResponse } from "./model/responses.model";
+
+ // @ts-ignore
 const dotenv = require('dotenv');
 const Koa = require('koa');
 const next = require('next');
@@ -10,6 +14,7 @@ const { default: Shopify, ApiVersion } = require('@shopify/shopify-api');
 const getSubscriptionUrl = require('./server/getSubscriptionUrl');
 const Router = require('koa-router');
 const jwt = require('jsonwebtoken');
+
 // import fetchApi from './utils';
 
 dotenv.config();
@@ -43,7 +48,7 @@ const saveAccessTokenInDB = (shop,accessToken) => {
     exp:new Date().getTime() + 60000
   }), process.env.SHOPIFY_API_SECRET);
   // no need post as shop and token are encrypted in header
-  fetch(
+  return fetch(
     `${process.env.RM_SERVER_URL}/shopify/access_token/save`,
     { method:'get',
       headers: {      
@@ -58,17 +63,20 @@ const saveAccessTokenInDB = (shop,accessToken) => {
         console.log('in data 200');
         return data.json();   
       } else {
-      console.log('in else');
+      console.log('error saving token');
         return data.text();
       }             
     })
     .then(val => {
       console.log('val',val);
-      // return val
+       return val;
     })
     .catch(err => {
       console.log('err',err)
-    // return err;
+     return {
+       success:false,
+       message:JSON.stringify(err),
+     }
     })  
 }
 
@@ -86,7 +94,12 @@ app.prepare().then(() => {
            console.log('shop', shop);
            console.log('env var', process.env.RM_SERVER_URL);
          
-           saveAccessTokenInDB(shop,accessToken);        
+           const response = await saveAccessTokenInDB(shop,accessToken);
+           console.log('response save token', response);
+           if(!response.success) {
+             if(response.message)(console.log('error saving token, message:',response.message))
+             return;
+           }
       
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
         ctx.redirect(`/?shop=${shop}`);
@@ -107,25 +120,23 @@ app.prepare().then(() => {
     ctx.res.statusCode = 200;
   };
 
-  // Any route starting with `/api` will not be checked for Shopify auth
-  // router.get("/api/.*", verifyRequest({returnHeader: true}), async (ctx, next) => {
-  //   console.log('flo api server');
-  //   await handle(ctx.req, ctx.res);
-  // });
 
   router.post("/api/(.*)", async (ctx) => {
     console.log('api route post');
     await handle(ctx.req, ctx.res);
-  //  ctx.respond = false;
-   // ctx.res.statusCode = 200;
   });
 
   router.get("/api/(.*)", async (ctx) => {
-    console.log('api route get',ctx.req.headers);
+    console.log('api route get');
     await handle(ctx.req, ctx.res);
-    ctx.respond = false;
-    ctx.res.statusCode = 200;
   });
+
+  // router.get("/api/(.*)", async (ctx) => {
+  //   console.log('api route get',ctx.req.headers);
+  //   await handle(ctx.req, ctx.res);
+  //   ctx.respond = false;
+  //   ctx.res.statusCode = 200;
+  // });
 
   router.get("/flo", async (ctx) => {
     console.log('flo route get');

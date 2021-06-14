@@ -4,12 +4,15 @@ import Head from 'next/head';
 import { AppProvider } from '@shopify/polaris';
 import { Provider, Context, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
+import { Redirect } from '@shopify/app-bridge/actions';
 import '@shopify/polaris/dist/styles.css';
 import translations from '@shopify/polaris/locales/en.json';
 import ClientRouter from '../components/ClientRouter';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+import { AdminContextProvider } from '../store/admin-context';
 const axios = require('axios');
+
 
 function userLoggedInFetch(app) {
     const fetchFunction = authenticatedFetch(app);
@@ -42,6 +45,7 @@ function userLoggedInFetch(app) {
     //  append your request headers with an authenticated token
      config.headers["Authorization"] = `Bearer ${token}`;
      config.headers['Content-Type'] = 'application/json';
+     config.headers['Accept'] = 'application/json';
      return config;
      });
      //  return config;
@@ -60,29 +64,26 @@ function MyProvider(pageProps) {
    console.log('MyProvider1');
    const app = useAppBridge();
    console.log('MyProvider2');
-      // const app = this.context;
-  
       const client = new ApolloClient({
         fetch: userLoggedInFetch(app),
-        fetchOptions: {
+        fetchOptions: {         
           credentials: "include",
-        },
+        }
       });
   
       return (
         <ApolloProvider client={client}>
         {pageProps.children}
       </ApolloProvider>
-      );
-    
+      );    
   }
 
 function MyApp(props){
  
     const { Component, pageProps, shopOrigin } = props;
 
-  
-    const config = { apiKey: API_KEY, shopOrigin, forceRedirect: true };
+console.log('API_KEY',process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);  
+    const config = { apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY, shopOrigin, forceRedirect: true };
     return (
       <React.Fragment>
         <Head>
@@ -91,14 +92,14 @@ function MyApp(props){
         </Head>
         <Provider config={config}>
           <ClientRouter />
-          <AppProvider i18n={translations}>
-          
-          <MyProvider>
-           <AxiosInterceptor>
-              <Component {...pageProps} />
-             </AxiosInterceptor>
-            </MyProvider>
-           
+          <AppProvider i18n={translations}>          
+            <MyProvider>
+              <AxiosInterceptor>
+                <AdminContextProvider>
+                  <Component {...pageProps} />
+                </AdminContextProvider>
+              </AxiosInterceptor>
+            </MyProvider>           
           </AppProvider>
         </Provider>
       </React.Fragment>
