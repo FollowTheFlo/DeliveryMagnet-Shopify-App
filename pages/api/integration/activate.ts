@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import fetchApi from "../../../components/utils/fetchApi";
 import { SuccessResponse } from "../../../model/responses.model";
-import { getAccessTokenFromDB, getShopFromBearerHeader } from "../../shared";
+import { getAccessTokenFromDB, getShopFromBearerHeader } from "../../../shared";
 import * as jwt from 'jsonwebtoken';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {

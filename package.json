@@ -22,6 +22,7 @@
     "@types/koa": "^2.13.3",
     "apollo-boost": "^0.4.9",
     "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
     "graphql": "^15.5.0",
     "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^8.5.1",

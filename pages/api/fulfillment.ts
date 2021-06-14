@@ -1,5 +1,5 @@
-import fetchApi from '../../components/utils/fetchApi';
-import {getAccessTokenFromDB, getShopFromBearerHeader} from '../shared';
+import fetchApi from '../../fetchApi';
+import {getAccessTokenFromDB, getShopFromBearerHeader} from '../../shared';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { FulfillmentApiInput, FulFillmentInput, ShopifyOrderFullFillment, ShopifyOrderFullFillments } from '../../model/fulfillments.model';
 

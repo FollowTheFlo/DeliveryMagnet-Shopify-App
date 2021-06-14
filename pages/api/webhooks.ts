@@ -4,7 +4,7 @@ const axios = require('axios');
 import { useAppBridge } from "@shopify/app-bridge-react";
 import fetchApi from '../../components/utils/fetchApi';
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
-import {getAccessTokenFromDB, getShopAndBearerHeaders, getShopFromBearerHeader} from '../shared';
+import {getAccessTokenFromDB, getShopAndBearerHeaders, getShopFromBearerHeader} from '../../shared';
 import { WebHook } from "../../model/webhooks.model";
 import { ShopAndBearerHeaders, SuccessResponse } from "../../model/responses.model";
 // const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';

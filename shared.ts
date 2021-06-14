@@ -1,7 +1,7 @@
-import fetchApi from '../components/utils/fetchApi';
+import fetchApi from './fetchApi';
 import * as jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ShopAndBearerHeaders, SuccessResponse, TokenPayloadResponse } from '../model/responses.model';
+import { ShopAndBearerHeaders, SuccessResponse, TokenPayloadResponse } from './model/responses.model';
 
 const getAccessTokenFromDB = async (sessionToken:string):Promise<string|null> => {
     console.log('getAccessTokenFromDB');

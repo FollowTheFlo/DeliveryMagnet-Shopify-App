@@ -16,7 +16,7 @@ import styles from './OrderItem.module.css';
 
 import React from 'react';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.model';
-import fetchApi from '../../utils/fetchApi';
+import fetchApi from "../../utils/fetchApi";
 
 type OrderItemProps = {
     key: string;
