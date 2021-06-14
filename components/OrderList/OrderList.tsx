@@ -264,7 +264,8 @@ console.log('flo OrderList');
                       order={item}
                       onPushOrder={onPushToRM}
                       onFulfillOrder={onFulfillOneOrder}
-                      isManualMode={adminCtx.mode.manual}             
+                      isManualMode={adminCtx.mode.manual}
+                      domain={adminCtx.domain}             
                     />
                    );
                  }}

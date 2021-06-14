@@ -25,11 +25,12 @@ type OrderItemProps = {
     onPushOrder:(o:WHOrder)=>void;
     isManualMode:boolean;
     onFulfillOrder:(o:JobOrder)=>void;
+    domain:string;
 }
 
 const OrderItem = (props:OrderItemProps) => {
 
-    const {order, onPushOrder, isManualMode, onFulfillOrder} = props;
+    const {order, onPushOrder, isManualMode, onFulfillOrder,domain} = props;
 
     const pushToRm = (orderSelection:JobOrder) => {
         console.log('pushToRm orderId', orderSelection);
@@ -45,17 +46,18 @@ const OrderItem = (props:OrderItemProps) => {
     }
 
     const convertGraphQlToWebHookOrder = (o:JobOrder):WHOrder => {
+        const id = o.id.replace('gid://shopify/Order/',''); // original format gid://shopify/Order/3772116238507
         return {
-            id: o.id.replace('gid://shopify/Order/',''), // original format gid://shopify/Order/3772116238507
+            id: id, 
             test: false, // o.test
-            app_id: 'flo app ID2',
+            app_id: 'routeMagnet',
             cancel_reason: o.cancelReason,
             cancelled_at: o.cancelledAt,
             currency: o.totalPriceSet.shopMoney.currencyCode,
             current_total_price: o.totalPriceSet.shopMoney.amount,
             total_price:o.totalPriceSet.shopMoney.amount,
             email: o.email,
-            order_status_url: 'https://routemagnet.myshopify.com/order/12312897',
+            order_status_url: `${domain}/order/${id}`,
             shipping_address : o.shippingAddress ? {
                 first_name:o.shippingAddress.firstName,
                 address1:o.shippingAddress.address1,
