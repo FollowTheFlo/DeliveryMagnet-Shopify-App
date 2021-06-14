@@ -10,7 +10,7 @@ const Inscription:React.FC = (props) => {
   
     const handleSubmit = useCallback((_event) => {
       console.log('handleSubmit1', code);
-      if(!code) {
+      if(!code || code === '') {
         console.log('Please enter code');
         return;
       }
