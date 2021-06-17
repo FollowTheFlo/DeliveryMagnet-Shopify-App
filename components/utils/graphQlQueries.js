@@ -31,13 +31,14 @@ const GET_PRODUCTS_BY_ID = gql`
 
 const GET_ORDERS = gql`
   query{
-    orders(first: 15, reverse: true) {
+    orders(first: 5, reverse: true) {
     edges {
         node {
         id
         name
         displayFulfillmentStatus
         test
+        createdAt
         cancelReason
         cancelledAt
         email
@@ -104,13 +105,22 @@ const GET_ORDERS = gql`
             node {              
               id
               title
+              fulfillmentStatus
+              image {
+                id
+                originalSrc
+              }
               quantity
               originalUnitPriceSet {
                   shopMoney {
                       amount
                   }
               }
-              name         
+              name
+              sku
+              product {
+                id
+              }       
             }
           }
         }

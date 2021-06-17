@@ -9,28 +9,44 @@ import { Card,
     TextField,
     Heading,
     Badge,
+    Collapsible,
+    IndexTable
 } from '@shopify/polaris';
 
 import styles from './OrderItem.module.css';
 
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.model';
 import fetchApi from "../../utils/fetchApi";
+import LineItem from './lineItem/LineItem';
+import LineItemBlock from './lineItem/LineItem';
 
-type OrderItemProps = {
-    key: string;
+const fulfillMapping = {
+    FULFILLED:"Yes",
+    UNFULFILLED:"No",
+}
+
+type OrderItemProps = {   
     id: string;
     order:JobOrder;
     onPushOrder:(o:WHOrder)=>void;
     isManualMode:boolean;
     onFulfillOrder:(o:JobOrder)=>void;
     domain:string;
+    index:number;
+    selectedResources:string[];
 }
 
 const OrderItem = (props:OrderItemProps) => {
 
-    const {order, onPushOrder, isManualMode, onFulfillOrder,domain} = props;
+    const {selectedResources, index, order, onPushOrder, isManualMode, onFulfillOrder,domain} = props;
+    const [open, setOpen] = useState(false);
+    const handleToggle =() => {
+        console.log('flo');
+        setOpen((open) => !open);
+    };
+
 
     const pushToRm = (orderSelection:JobOrder) => {
         console.log('pushToRm orderId', orderSelection);
@@ -46,9 +62,9 @@ const OrderItem = (props:OrderItemProps) => {
     }
 
     const convertGraphQlToWebHookOrder = (o:JobOrder):WHOrder => {
-        const id = o.id.replace('gid://shopify/Order/',''); // original format gid://shopify/Order/3772116238507
+       
         return {
-            id: id, 
+            id: o.id, 
             test: false, // o.test
             app_id: 'routeMagnet',
             cancel_reason: o.cancelReason,
@@ -57,7 +73,7 @@ const OrderItem = (props:OrderItemProps) => {
             current_total_price: o.totalPriceSet.shopMoney.amount,
             total_price:o.totalPriceSet.shopMoney.amount,
             email: o.email,
-            order_status_url: `${domain}/order/${id}`,
+            order_status_url: `${domain}/order/${o.id}`,
             shipping_address : o.shippingAddress ? {
                 first_name:o.shippingAddress.firstName,
                 address1:o.shippingAddress.address1,
@@ -108,37 +124,69 @@ const OrderItem = (props:OrderItemProps) => {
    const fulFillmentBlock = (o:JobOrder) => {
     if(o.displayFulfillmentStatus === 'UNFULFILLED') {
         return (
-            <Stack.Item fill>
+            <IndexTable.Cell >
              <Button onClick={() => fulfillOrder(order)}>FulFill</Button>  
-             </Stack.Item>
+             </IndexTable.Cell>
         );
     }
     return  (
-    <Stack.Item fill>{ order.displayFulfillmentStatus} </Stack.Item>
+    <IndexTable.Cell >{ fulfillMapping[order.displayFulfillmentStatus]} </IndexTable.Cell>
     )
+   }
+
+   const lineItemsBlock = (o:JobOrder) => {
+       const lineItems = o.lineItems.edges
+        .map(li => li.node);
+
+    return lineItems.map((li,i) => {
+        return <LineItemBlock
+            key={i.toString()}
+            lineItem={li}
+        />
+            }
+    )
+        
    }
 
     return (
         // @ts-ignore
-        <ResourceList.Item>
-            <Stack>
-                <Stack.Item fill>
-                <h3>
+        <IndexTable.Row
+        id={props.id}       
+        selected={selectedResources.includes(props.id)}
+        position={index}
+        //   onClick={() => {
+        //     // store.set('item', item);
+        //     handleToggle();
+        //     }}
+        >
+           
+          
+                <IndexTable.Cell >
+             
                     <TextStyle variation="strong">
                     {order.name}
                     </TextStyle>
-                </h3>
-                </Stack.Item>                      
+                      
+
+                </IndexTable.Cell>
+                <IndexTable.Cell>
+                    {order?.createdAt}
+                </IndexTable.Cell>
+                <IndexTable.Cell>
+                    {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}
+                </IndexTable.Cell>
+                              
                 {                    
                         order?.job?.step?.customerLink ?
-                        <Stack.Item fill><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </Stack.Item>
+                        <IndexTable.Cell><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </IndexTable.Cell>
                         :
-                        <Stack.Item fill></Stack.Item>
+                        <IndexTable.Cell>                           
+                        </IndexTable.Cell>
                 }
                  {                    
                        fulFillmentBlock(order)                        
                 }
-                <Stack.Item fill>
+                <IndexTable.Cell>
                 <h3>
                     <TextStyle variation="strong">
                     
@@ -158,9 +206,9 @@ const OrderItem = (props:OrderItemProps) => {
                     }
                     </TextStyle>
                 </h3>
-                </Stack.Item>
-          </Stack>
-      </ResourceList.Item>
+                </IndexTable.Cell>
+         
+      </IndexTable.Row>
     )
 }
 

@@ -84,6 +84,7 @@ export interface Shipping_line
         displayFulfillmentStatus
         test
         cancelReason
+        createdAt
         cancelledAt
         email
         phone
@@ -146,17 +147,28 @@ export interface Shipping_line
         }
         lineItems: {
           edges: [{
-            node: {              
-              id
-              title
-              quantity
-              originalUnitPriceSet: {
-                  shopMoney: {
-                      amount
-                  }
-              }
-              name         
-            }
+            node: LineItem
           }]
         }
+    }
+
+    export interface LineItem {
+      id
+      title:string;
+      quantity:number;      
+      fulfillmentStatus
+      sku:string;
+      product: {
+        id
+      }
+      image: {
+        id
+        originalSrc
+      }
+      originalUnitPriceSet: {
+          shopMoney: {
+              amount
+          }
+      }
+      name       
     }

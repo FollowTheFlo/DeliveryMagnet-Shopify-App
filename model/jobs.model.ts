@@ -52,14 +52,17 @@ export interface Step {
     routeFinished:boolean,
     startedAt:string,
     inProgress:boolean,
-    completedDate:string,
+    completedAt:string,
     completedBy:string,
     completed:boolean,
     canceled:boolean,
+    canceledAt:string,
+    canceledBy:string,
     driverLabel: string,
     imageUrl:string,
     assignedByLabel:string,
     assignedToLabel:string,
+    assignedAt:string,
     customerLink: string
 }
 

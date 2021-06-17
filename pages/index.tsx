@@ -1,5 +1,6 @@
 
 import React, { useContext } from 'react';
+import { useRouter } from 'next/router';
 import { EmptyState, Layout, Page } from '@shopify/polaris';
 import { ResourcePicker, TitleBar } from '@shopify/app-bridge-react';
 import store from 'store-js';
@@ -27,7 +28,7 @@ import AdminContext from '../store/admin-context';
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
 const Index:React.FC = (props) => {
-
+  const router = useRouter();
   const adminCtx = useContext(AdminContext);
 
   const emptyState = !store.get('ids');
@@ -66,8 +67,10 @@ const Index:React.FC = (props) => {
       }
       setloading(false);
     }
-
-    getAccessTokenFromDBAsync();
+    if(!adminCtx.isIntegrated) {
+      console.log('not integrated: getAccessToken');
+      getAccessTokenFromDBAsync();
+    } else  setloading(false);
   
   }, [])
 

@@ -66,7 +66,7 @@ export const AdminContextProvider = (props) => {
     // note that step is present
     setJobOrders((prevJobOrders:JobOrder[]) => {
       const updatedJobOrders = prevJobOrders.slice();
-      const index = updatedJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == rmJob.extId));
+      const index = updatedJobOrders.findIndex(o => (o && o.id && o.id == rmJob.extId));
       console.log('index prevJobOrders', index);
       if(index != -1) {
         // adding step with null value as new job, not in any itinerary

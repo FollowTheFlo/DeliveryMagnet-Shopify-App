@@ -1,4 +1,6 @@
 import styles from './OrderList.module.css';
+import Link from 'next/link';
+import {useRouter} from 'next/router';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 // require("dotenv").config();
 const axios = require('axios');
@@ -17,6 +19,8 @@ import { Card,
     TextField,
     Heading,
     Badge,
+    IndexTable,
+    useIndexResourceState,
 } from '@shopify/polaris';
 import OrderItem from './OrderItem/OrderItem';
 import store from 'store-js';
@@ -28,6 +32,7 @@ import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../model/orders.model
 import { RmJob, RmJobWithStep } from '../../model/jobs.model';
 import { AdminContextType } from '../../model/context.model';
 import { SuccessResponse } from '../../model/responses.model';
+import { SelectionType } from '@shopify/polaris/dist/types/latest/src/utilities/index-provider';
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -44,11 +49,10 @@ console.log('flo OrderList');
    
     // const [domain, setDomain] = useState('flo domain');
     const adminCtx = useContext(AdminContext);
-    
+    const router = useRouter();
    
-    // JobOrder is combination of Shopify Order with job property containing RouteMagnet Job obj
-    // fetching jobOrders will need graphql Orders request to shopify + REST request to RM jobs
-    // const [jobOrders, setJobOrders] = useState([]);
+    
+    let preventRowSelection = false;
     const [refreshDate, setRefreshDate] = useState<string>('');
     // inform on loading stage: requesting data on shopify or RM
     const [loadingMessage, setLoadingMessage] = useState<string>('');
@@ -107,6 +111,9 @@ console.log('flo OrderList');
             // go through encapsulation data.data.orders.edges
             console.log('ordersdata', data);
             const ordersList = data.data.orders.edges.map(o => o.node) as ShopifyGraphQLOrder[];
+            ordersList.forEach(o => {
+              o.createdAt = new Date(o.createdAt).toLocaleString()
+            })
             return ordersList;
           })
           .catch(err => {
@@ -121,7 +128,12 @@ console.log('flo OrderList');
           console.log('queryRmOrders', ordersList);
           // const {orderIDsList, ordersList} = params;
 
-          const orderIDsList = ordersList.map(o => o.id.replace('gid://shopify/Order/',''));
+          ordersList = ordersList.map(o => {
+            // format id
+            return {...o,id:o.id.replace('gid://shopify/Order/','')}
+          })
+
+          const orderIDsList = ordersList.map(o => o.id);
           //ordersList ist is string[]
           console.log('queryRmOrders orderIDsList',orderIDsList);
           const obj =  {
@@ -163,13 +175,9 @@ console.log('flo OrderList');
 
         const onPushToRM = (whOrder:WHOrder) => {
           console.log('onPushToRM', whOrder);
-          // axios.post('/api/fulfillment',{action:'test',orderId:whOrder.id})
-          // .then(response => {
-          //   console.log('response fulfillment api', response);           
-          // })
-          // .catch(err => {
-          //   console.log('err fulfillment', err);
-          // })
+          console.log('setPreventSel', true);
+          preventRowSelection = true;
+
         
           fetchApi({
             method:'post',
@@ -184,24 +192,13 @@ console.log('flo OrderList');
                 return;
               }
               const job = response as RmJob;
-
-              
-                // // get previous state
-                // const prevJobOrders = [...adminCtx.jobOrders]; 
-                // console.log('prev1',prevJobOrders);
-                // const index = prevJobOrders.findIndex(o => (o && o.id && o.id.replace('gid://shopify/Order/','') == job.extId));
-                // console.log('index prevJobOrders', index);
-                // if(index != -1) {
-                //   const updatedJob = {...prevJobOrders[index],job:{...job,step:null}} as JobOrder;            
-                //   prevJobOrders[index] = updatedJob;
-                //   console.log('prev2',prevJobOrders);  
-                // }
-                adminCtx.onJobOrderPush({...job});
+              adminCtx.onJobOrderPush({...job});
             })
         }
 
         const onFulfillOneOrder = (o:JobOrder) => {
-          const orderId = o.id.replace('gid://shopify/Order/','') 
+          preventRowSelection = true;
+          const orderId = o.id.replace('gid://shopify/Order/','')
           axios.post('/api/fulfillment',{action:'test',orderId})
           .then(response => {
             const result = response?.data as SuccessResponse;
@@ -217,6 +214,64 @@ console.log('flo OrderList');
             console.log('err fulfillment', err);
           })
         }
+
+        const {
+          selectedResources,
+          allResourcesSelected,
+          handleSelectionChange,
+          // @ts-ignore
+        } = useIndexResourceState(adminCtx.jobOrders);
+
+       const onSelectionChangeHandler = (selectionType: SelectionType, toggleType: boolean, selectedOrderId:any)  => {
+          console.log('onSelectionChange',selectionType, toggleType,selectedOrderId);
+          console.log('preventRowSelection', preventRowSelection);
+          if(preventRowSelection) {
+            console.log('in preventRowSelection condition');          
+            preventRowSelection = false;
+            return;
+          }
+          if(!selectedOrderId) return;
+          router.push(`/order-details/${selectedOrderId}`);
+       }
+
+        const rowMarkup = (list:JobOrder[]) => {
+          console.log('rowMarkup');
+          return list.map((o,i)=>{
+          return <OrderItem
+            index={i}
+             key={o.id}
+              id={o.id}
+              order={o}
+              onPushOrder={onPushToRM}
+              onFulfillOrder={onFulfillOneOrder}
+              isManualMode={adminCtx.mode.manual}
+              domain={adminCtx.domain}
+              selectedResources={selectedResources}
+          />})
+        }
+      const IndexTableBlock = () => {
+        console.log('IndexTableBlock');
+        return <IndexTable
+        resourceName={{ singular: 'Order', plural: 'Orders' }}
+        itemCount={adminCtx.jobOrders.length}
+        selectedItemsCount={
+          allResourcesSelected ? 'All' : selectedResources.length
+        }
+        selectable = {false}
+        loading = {loadingMessage ? true : false}
+        onSelectionChange={onSelectionChangeHandler}
+        headings={[
+          {title: 'Name'},
+          {title: 'Created'},
+          {title: 'Customer'},
+          {title: 'RM Link'},
+          {title: 'Fulfill'},
+          {title: 'RM Status'},
+        ]}
+      >
+        {rowMarkup(adminCtx.jobOrders.slice())}
+      </IndexTable>
+      }
   
       return (
         
@@ -249,27 +304,30 @@ console.log('flo OrderList');
                         </Stack.Item>
                     </Stack>
                  </ResourceList> */}
-              { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 && <ResourceList
-                showHeader={true}
-                resourceName={{ singular: 'Order', plural: 'Orders' }}
-                items={adminCtx.jobOrders}
-                renderItem={(item,itemId, index) => {
-                  const {id, name} = item;
+              { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 &&
+              IndexTableBlock()
+              //  <ResourceList
+              //   showHeader={true}
+              //   resourceName={{ singular: 'Order', plural: 'Orders' }}
+              //   items={adminCtx.jobOrders}
+              //   renderItem={(item,itemId, index) => {
+              //     const {id, name} = item;
 
-                 // const price = item.variants.edges[0].node.price;
-                  return (
-                    <OrderItem
-                      key={id}
-                      id={id}
-                      order={item}
-                      onPushOrder={onPushToRM}
-                      onFulfillOrder={onFulfillOneOrder}
-                      isManualMode={adminCtx.mode.manual}
-                      domain={adminCtx.domain}             
-                    />
-                   );
-                 }}
-               />}
+               
+              //     return (
+              //       <OrderItem
+              //         key={id}
+              //         id={id}
+              //         order={item}
+              //         onPushOrder={onPushToRM}
+              //         onFulfillOrder={onFulfillOneOrder}
+              //         isManualMode={adminCtx.mode.manual}
+              //         domain={adminCtx.domain}             
+              //       />
+              //      );
+              //    }}
+              //  />
+               }
                </Card>            
 
 </React.Fragment>
