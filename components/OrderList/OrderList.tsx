@@ -198,8 +198,12 @@ console.log('flo OrderList');
 
         const onFulfillOneOrder = (o:JobOrder) => {
           preventRowSelection = true;
-          const orderId = o.id.replace('gid://shopify/Order/','')
-          axios.post('/api/fulfillment',{action:'test',orderId})
+          const orderId = o.id; // .replace('gid://shopify/Order/','')
+          axios.post('/api/fulfillment',{
+            action:'create',
+            orderId,
+            uId:o?.job?.uId ?? null,
+          })
           .then(response => {
             const result = response?.data as SuccessResponse;
 
@@ -234,7 +238,7 @@ console.log('flo OrderList');
           router.push(`/order-details/${selectedOrderId}`);
        }
 
-        const rowMarkup = (list:JobOrder[]) => {
+        const jobOrderRow = (list:JobOrder[]) => {
           console.log('rowMarkup');
           return list.map((o,i)=>{
           return <OrderItem
@@ -263,13 +267,14 @@ console.log('flo OrderList');
         headings={[
           {title: 'Name'},
           {title: 'Created'},
-          {title: 'Customer'},
-          {title: 'RM Link'},
+          {title: 'Customer'},          
           {title: 'Fulfill'},
           {title: 'RM Status'},
         ]}
       >
-        {rowMarkup(adminCtx.jobOrders.slice())}
+        {
+          jobOrderRow(adminCtx.jobOrders.slice())
+        }
       </IndexTable>
       }
   
