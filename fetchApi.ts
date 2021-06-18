@@ -15,7 +15,7 @@ const fetchApi = (props:FetchApiProps) => {
     console.log('url', url);
     console.log('headers', headers);
 
-    if(!method || (method==='post' && !body) || !url) return Promise.reject('one of the props is null');
+    if(!method || (method==='post' && !body) || (method==='put' && !body) || !url) return Promise.reject('one of the props is null');
 
     console.log('fetchApi2');
 

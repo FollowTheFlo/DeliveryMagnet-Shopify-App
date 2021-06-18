@@ -52,7 +52,7 @@ const FulfillCard  = (props:JobOrderProps) => {
              
               </Stack.Item>
               <Stack.Item>
-                {quantity} x {order.totalPriceSet.shopMoney.amount} {originalUnitPriceSet.shopMoney.amount}
+                {quantity} x {originalUnitPriceSet.shopMoney.amount}
               </Stack.Item>
               <Stack.Item>
                 {fulfillmentStatus}

@@ -20,10 +20,12 @@ import { Card,
 
 import AdminContext from '../../store/admin-context';
 import { useRouter } from 'next/router';
-import { JobOrder } from '../../model/orders.model';
+import { JobOrder, WHOrder } from '../../model/orders.model';
 import { Header } from '@shopify/polaris/dist/types/latest/src/components/Card/components';
 import FulfillCard from '../../components/OrderList/OrderItem/fulfill-card/FulfillCard';
 import RouteMagnetCard from '../../components/RouteMagnetCard/RouteMagnetCard';
+import fetchApi from '../../components/utils/fetchApi';
+import { RmJob } from '../../model/jobs.model';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
@@ -44,6 +46,29 @@ const OrderDetails:React.FC = (props) => {
     const o = adminCtx.jobOrders.find(o => o.id === orderId);
     setOrder(o);
   },[])
+
+  const onPushToRM = (whOrder:WHOrder) => {
+    console.log('onPushToRM', whOrder);
+    
+  
+    fetchApi({
+      method:'post',
+      body:JSON.stringify(whOrder),
+      url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
+    })
+      .then(response => {
+        console.log('response job', response);
+        // if error, object returned has property error
+        if(response.error) {
+          console.log(response.error);
+          return;
+        }
+        const job = response as RmJob;
+        adminCtx.onJobOrderPush({...job});
+        const o = adminCtx.jobOrders.find(o => o.id === orderId);
+         setOrder(o);
+      })
+  }
 
   
 

@@ -76,7 +76,7 @@ const GET_ORDERS = gql`
           firstName
           lastName
         }        
-        shippingLines(first: 2)
+        shippingLines(first: 5)
         {
            edges {
               node{

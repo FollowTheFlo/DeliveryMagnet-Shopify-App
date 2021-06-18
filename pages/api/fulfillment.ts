@@ -28,18 +28,32 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const data:FulFillmentInput = req.body;
-    const { action, orderId } = data;
+    const { action, orderId, uId } = data;
     if(!orderId) {
         res.status(200).json({success:false,message:'orderId null'});
         return;
     }
     const fulfillmentRes = await getOrderFulfillment(headers, shop, orderId);
-    if(fulfillmentRes && fulfillmentRes.fulfillments && fulfillmentRes.fulfillments.length > 0) {
-        res.status(200).json({success:false,message:'order already fulfilled'});
+
+    if(action === 'update') {
+      if(!fulfillmentRes || !fulfillmentRes.fulfillments || fulfillmentRes.fulfillments.length === 0) {
+        res.status(200).json({success:false,message:'order not fulfilled, cannot be updated'});
         return;
+     }
+     const success = await updateOrderFullfillment(fulfillmentRes,headers, shop, orderId);
+     res.status(200).json({success:success,message:`Fulfillment updated succesfully for order  + ${orderId}`});
+     return;
     }
-    const success = await postOrderFullfillment(headers, shop, orderId);
-    res.status(200).json({success:success,message:`Fulfillment created succesfully for order  + ${orderId}`});
+
+    if(action === 'create') {
+      if(fulfillmentRes?.fulfillments?.length > 0) {
+          res.status(200).json({success:false,message:'order already fulfilled'});
+          return;
+      }
+    
+        const success = await postOrderFullfillment(headers, shop, orderId, uId);
+        res.status(200).json({success:success,message:`Fulfillment created succesfully for order  + ${orderId}`});
+    }
 
     
 }
@@ -64,7 +78,33 @@ const getOrderFulfillment = async (headers,shop,orderId):Promise<ShopifyOrderFul
       }
 }
 
-const postOrderFullfillment = async (headers,shop,orderId) => {
+const updateOrderFullfillment = async (fulfillmentApiInput:ShopifyOrderFullFillments, headers,shop:string,orderId:string,uId?:string) => {
+  console.log('updateOrderFullfillment');
+  const oneFulfillment = fulfillmentApiInput.fulfillments[0];
+  try {
+    const response = await fetchApi({
+      method:'put',
+      headers,
+      url:`https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments/${oneFulfillment.id}.json`,
+      body:JSON.stringify({
+        fulfillment: {
+          tracking_urls:[`${process.env.RM_CLIENT_URL}/delivery/${uId}`]       
+        }
+      })      
+    },
+    )
+    console.log('fulfillment',JSON.stringify(response));
+    if(!response.fulfillment)return false;
+
+    return true;
+} catch(err) {
+  console.log('fulfillment err',err);
+  return false; 
+}
+
+}
+
+const postOrderFullfillment = async (headers,shop,orderId,uId?) => {
     console.log('postOrderFullfillment');
     try {
       const fulfillmentApiInput:FulfillmentApiInput = {
@@ -73,15 +113,19 @@ const postOrderFullfillment = async (headers,shop,orderId) => {
         notify_customer:false,
         tracking_company:'RouteMagnet',
         message:'Delivery managed by RM',
-        shipment_status:'ready_for_pickup',
-          tracking_urls:['https://app.routemagnet.com/delivery/60ad045a047fb50017f81841']
-      }
+        shipment_status:'ready_for_pickup',       
+      }     
     };
+   
         const response = await fetchApi({
           method:'post',
           headers,
           url:`https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,
-          body:JSON.stringify(fulfillmentApiInput)      
+          body:JSON.stringify(uId ? { // add tracking url if uID exists, it means order ws already pushed to RM
+            fulfillment :{...fulfillmentApiInput.fulfillment,
+              tracking_urls:[`${process.env.RM_CLIENT_URL}/delivery/${uId}`]            
+            }            
+          } : fulfillmentApiInput)      
     },
         )
         //  body:JSON.stringify({fulfillment: { location_id: 123456789 }})

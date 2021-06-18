@@ -24,8 +24,7 @@ const RouteMagnetCard  = (props:JobOrderProps) => {
  const {order} = props;
  return <Card title="RouteMagnet Local Delivery">
  <Card.Section>
- Status: 
- 
+  
 { order?.job?.status ?
  <Badge>
    {order?.job?.status ?? "Not on RouteMagnet"}
@@ -34,7 +33,7 @@ const RouteMagnetCard  = (props:JobOrderProps) => {
    <Button
    icon={CirclePlusOutlineMinor}
    >
-     Add to RM Queue
+     Ready for Delivery
    </Button>
  }
  </Card.Section>

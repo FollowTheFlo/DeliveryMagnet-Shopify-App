@@ -174,15 +174,8 @@ const OrderItem = (props:OrderItemProps) => {
                 </IndexTable.Cell>
                 <IndexTable.Cell>
                     {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}
-                </IndexTable.Cell>
-                              
-                {                    
-                        order?.job?.step?.customerLink ?
-                        <IndexTable.Cell><a target='_blank' href={order.job.step.customerLink}>Track Link</a> </IndexTable.Cell>
-                        :
-                        <IndexTable.Cell>                           
-                        </IndexTable.Cell>
-                }
+                </IndexTable.Cell>                             
+               
                  {                    
                        fulFillmentBlock(order)                        
                 }
@@ -198,7 +191,7 @@ const OrderItem = (props:OrderItemProps) => {
                          :
                         (order?.id ?
                             <Button onClick={() => pushToRm(order)}>
-                            Push to RM
+                            Ready for Delivery
                           </Button>
                           :
                             <p>No Id</p>

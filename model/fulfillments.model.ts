@@ -1,6 +1,7 @@
 export interface FulFillmentInput {
     action: string;
     orderId: string;
+    uId: string; //job uinique Id on RouteMagnet, use in tracking url
 }
 
 export interface ShopifyOrderFullFillment {
