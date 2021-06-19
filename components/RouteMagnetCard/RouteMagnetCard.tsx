@@ -12,9 +12,11 @@ import { Card,
     TextField,
     Heading,
     Badge,
+    Icon,
   } from '@shopify/polaris';
 import { JobOrder } from '../../model/orders.model';
-import {CircleTickMajor, ArrowLeftMinor, CirclePlusOutlineMinor, ArrowDownMinor} from '@shopify/polaris-icons';
+import {CircleTickMajor, ArrowLeftMinor, CirclePlusOutlineMinor, ChevronDownMinor, ArrowDownMinor} from '@shopify/polaris-icons';
+import wordsMapping from '../utils/wordsMapping';
 
 interface JobOrderProps {
   order:JobOrder;
@@ -22,12 +24,46 @@ interface JobOrderProps {
 
 const RouteMagnetCard  = (props:JobOrderProps) => {
  const {order} = props;
+
+ const statusList = ['UNFULFILLED','READY_FOR_DELIVERY','IN_WAITING_QUEUE','IN_PLANNER_BUILDER',
+                    'IN_ITINERARY_SAVED','IN_ITINERARY_ASSIGNED','ITINERARY_STARTED','ON_THE_WAY','COMPLETED']
+
+                    const index = statusList.findIndex(s => order.statusAction.status === s)
+ const statusStack = (o:JobOrder) => {
+   
+  return <Card title="RouteMagnet Local Delivery"> 
+  <Card.Section>{
+    statusList.map((status,i) => {
+      const badgeStatus = i === index ? 'attention' : i > index ? 'new'  : 'success';
+      return <React.Fragment>
+        <Stack distribution="center">
+          <Stack.Item fill={true}>
+            <Badge status={badgeStatus}>
+              {wordsMapping[status]}
+            </Badge>
+          </Stack.Item>       
+        </Stack>
+        <Stack>
+          <Stack.Item>
+          <Icon
+            source={ChevronDownMinor}
+            color="base" />
+          </Stack.Item>
+        </Stack>
+      </React.Fragment>
+    })}
+    </Card.Section>
+  </Card>
+ }
+
+ return statusStack(order);
+
  return <Card title="RouteMagnet Local Delivery">
  <Card.Section>
   
 { order?.job?.status ?
  <Badge>
-   {order?.job?.status ?? "Not on RouteMagnet"}
+   {wordsMapping[order?.statusAction?.status]}
  </Badge>    
    :
    <Button
@@ -38,8 +74,8 @@ const RouteMagnetCard  = (props:JobOrderProps) => {
  }
  </Card.Section>
  
-{    
-order?.job?.status &&
+{
+order?.statusAction.status &&
 <Card.Section>
      <TextStyle variation="strong">Time Line</TextStyle>
      <hr/>

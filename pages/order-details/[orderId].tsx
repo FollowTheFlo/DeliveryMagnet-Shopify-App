@@ -26,6 +26,7 @@ import FulfillCard from '../../components/OrderList/OrderItem/fulfill-card/Fulfi
 import RouteMagnetCard from '../../components/RouteMagnetCard/RouteMagnetCard';
 import fetchApi from '../../components/utils/fetchApi';
 import { RmJob } from '../../model/jobs.model';
+import wordsMapping from '../../components/utils/wordsMapping';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
@@ -76,7 +77,7 @@ const OrderDetails:React.FC = (props) => {
   <Page
   breadcrumbs={[{content: `order ${order.name}`, onAction: () => router.push("/") }]}
   title={`Order ${order.name}`}
-  subtitle= {"Created at" + order?.createdAt + " - " + fulfillMapping[order.displayFulfillmentStatus ] + " - " + order?.job?.status ?? ""}
+  subtitle= {"Created at" + order?.createdAt + " - " + wordsMapping[order.statusAction.status]}
 
 >
   <Layout>

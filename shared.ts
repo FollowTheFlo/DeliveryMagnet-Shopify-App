@@ -17,7 +17,7 @@ const getAccessTokenFromDB = async (sessionToken:string):Promise<string|null> =>
           }
         });
         if(!response || !response.success! || !response.accessToken) {
-          console.log('accessTokenResponse error', response.message);
+          console.log('accessTokenResponse error', response?.message);
           return null;
         }
       return response.accessToken;

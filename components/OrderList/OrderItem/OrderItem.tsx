@@ -21,11 +21,10 @@ import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../../model/orders.mo
 import fetchApi from "../../utils/fetchApi";
 import LineItem from './lineItem/LineItem';
 import LineItemBlock from './lineItem/LineItem';
+import { StatusAction } from '../../../model/input.model';
+import wordsMapping from '../../utils/wordsMapping';
 
-const fulfillMapping = {
-    FULFILLED:"Yes",
-    UNFULFILLED:"No",
-}
+
 
 type OrderItemProps = {   
     id: string;
@@ -37,6 +36,7 @@ type OrderItemProps = {
     index:number;
     selectedResources:string[];
 }
+
 
 const OrderItem = (props:OrderItemProps) => {
 
@@ -120,47 +120,82 @@ const OrderItem = (props:OrderItemProps) => {
             })            
             }
         }
+
+    // const getStatusAction = (o:JobOrder):StatusAction => {
+    //     if(o.displayFulfillmentStatus === 'UNFULFILLED') return {status:"UNFULFILLED", action:"PREPARE_DELIVERY"};
+    //     if(o.displayFulfillmentStatus === 'FULFILLED' ){ 
+    //         if(!o.job || !o.job.uId) return {status:"READY_FOR_DELIVERY", action:"PUSH_TO_ROUTEMAGNET"};
+    //         if(o?.job?.status === 'IN_WAITING_QUEUE') return {status:"IN_WAITING_QUEUE", action:"SELECT_DELIVERY"};
+    //         if(o?.job?.status === 'IN_PLANNER_BUILDER') return {status:"IN_PLANNER_BUILDER", action:"CREATE_ITINERARY"};
+    //         if(o?.job?.status === 'IN_ITINERARY_SAVED') return {status:"IN_ITINERARY_SAVED", action:"ASSIGNED_ITINERARY"};
+    //         if(o?.job?.status === 'IN_ITINERARY_ASSIGNED') return {status:"IN_ITINERARY_ASSIGNED", action:"START_ITINERARY"};
+    //         if(o?.job?.status === 'ITINERARY_STARTED') return {status:"ITINERARY_STARTED", action:"DRIVE_NEXT_DELIVERY"};
+    //         if(o?.job?.status === 'ON_THE_WAY') return {status:"ON_THE_WAY", action:"COMPLETE"};
+    //         if(o?.job?.status === 'COMPLETED') return {status:"COMPLETED", action:"N/A"};
+    //         if(o?.job?.status === 'CANCELED') return {status:"CANCELED", action:"N/A"};
+    //         if(o?.job?.status === 'UNKNOWN') return {status:"UNKNOWN", action:"N/A"};
+    //     }
+    //     return {status:"UNKNOWN", action:"N/A"};
+    // }        
     
-   const fulFillmentBlock = (o:JobOrder) => {
-    if(o.displayFulfillmentStatus === 'UNFULFILLED') {
-        return (
-            <IndexTable.Cell >
-             <Button onClick={() => fulfillOrder(order)}>FulFill</Button>  
-             </IndexTable.Cell>
-        );
+
+    const statusCol = (o:JobOrder) => {
+       // const statusAction = getStatusAction(o);
+        const status = o.statusAction.status === 'UNFULFILLED' ||  o.statusAction.status === 'READY_FOR_DELIVERY' ? 'attention' : 'info';
+        return  (
+        <Badge status={status}>{ wordsMapping[o.statusAction.status]}</Badge>    
+        )
     }
-    return  (
-    <IndexTable.Cell >{ fulfillMapping[order.displayFulfillmentStatus]} </IndexTable.Cell>
-    )
-   }
+    const actionCol = (o:JobOrder) => {
+       // const statusAction = getStatusAction(o);
+        if(o.statusAction.status === 'UNFULFILLED') {
+            return (
+                
+                <Button size="slim" onClick={() => fulfillOrder(order)}>{wordsMapping[o.statusAction.action]}</Button>  
+               
+            );
+        }
+        if(o.statusAction.status === 'READY_FOR_DELIVERY') {
+            return (
+                
+                <Button size="slim" onClick={() => pushToRm(order)}>{wordsMapping[o.statusAction.action]}</Button>  
+               
+            );
+        }
+        return  (
+       ""     
+        )
+    }
 
-   const lineItemsBlock = (o:JobOrder) => {
-       const lineItems = o.lineItems.edges
-        .map(li => li.node);
 
-    return lineItems.map((li,i) => {
-        return <LineItemBlock
-            key={i.toString()}
-            lineItem={li}
-        />
-            }
-    )
+   const itemsCountCol = (o:JobOrder) => {
+     
+        const count = o.lineItems.edges.length;
+        console.log('itemsCountCol',count);
+    return  (count + count === 1 ? " item" : " items")
+}
+
+//    const lineItemsBlock = (o:JobOrder) => {
+//        const lineItems = o.lineItems.edges
+//         .map(li => li.node);
+
+//     return lineItems.map((li,i) => {
+//         return <LineItemBlock
+//             key={i.toString()}
+//             lineItem={li}
+//         />
+//             }
+//     )
         
-   }
+//    }
 
     return (
-        // @ts-ignore
+       
         <IndexTable.Row
         id={props.id}       
         selected={selectedResources.includes(props.id)}
-        position={index}
-        //   onClick={() => {
-        //     // store.set('item', item);
-        //     handleToggle();
-        //     }}
+        position={index}   
         >
-           
-          
                 <IndexTable.Cell >
              
                     <TextStyle variation="strong">
@@ -174,31 +209,24 @@ const OrderItem = (props:OrderItemProps) => {
                 </IndexTable.Cell>
                 <IndexTable.Cell>
                     {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}
-                </IndexTable.Cell>                             
-               
-                 {                    
-                       fulFillmentBlock(order)                        
-                }
+                </IndexTable.Cell>
                 <IndexTable.Cell>
-                <h3>
-                    <TextStyle variation="strong">
-                    
-                    {
-                     order?.job?.status ?
-                        <React.Fragment>
-                            <Badge>{order.job.status}</Badge>                             
-                       </React.Fragment>
-                         :
-                        (order?.id ?
-                            <Button onClick={() => pushToRm(order)}>
-                            Ready for Delivery
-                          </Button>
-                          :
-                            <p>No Id</p>
-                          )
-                    }
-                    </TextStyle>
-                </h3>
+                {order?.totalPriceSet.shopMoney.currencyCode} {order?.totalPriceSet.shopMoney.amount}
+                </IndexTable.Cell>                            
+                <IndexTable.Cell >
+                {                    
+                    statusCol(order)                                              
+                }
+                </IndexTable.Cell>
+                <IndexTable.Cell >
+                {
+                    actionCol(order)
+                }
+                </IndexTable.Cell>
+                <IndexTable.Cell >
+                {
+                    itemsCountCol(order)
+                }
                 </IndexTable.Cell>
          
       </IndexTable.Row>

@@ -1,7 +1,9 @@
+import { StatusAction } from "./input.model";
 import { RmJob, RmJobWithStep } from "./jobs.model";
 
 export interface JobOrder extends ShopifyGraphQLOrder {
     job: RmJobWithStep | null;
+    statusAction: StatusAction | null;
 }
 
 export interface WHOrder {

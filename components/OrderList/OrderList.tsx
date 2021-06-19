@@ -33,6 +33,7 @@ import { RmJob, RmJobWithStep } from '../../model/jobs.model';
 import { AdminContextType } from '../../model/context.model';
 import { SuccessResponse } from '../../model/responses.model';
 import { SelectionType } from '@shopify/polaris/dist/types/latest/src/utilities/index-provider';
+import { StatusAction } from '../../model/input.model';
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -100,6 +101,24 @@ console.log('flo OrderList');
       })
     }
 
+    const getStatusAction = (displayFulfillmentStatus:string, job:RmJobWithStep | null):StatusAction => {
+      if(displayFulfillmentStatus === 'UNFULFILLED') return {status:"UNFULFILLED", action:"PREPARE_DELIVERY"};
+      if(displayFulfillmentStatus === 'FULFILLED' ){ 
+          if(!job || !job.uId) return {status:"READY_FOR_DELIVERY", action:"PUSH_TO_ROUTEMAGNET"};
+          if(job?.status === 'IN_WAITING_QUEUE') return {status:"IN_WAITING_QUEUE", action:"SELECT_DELIVERY"};
+          if(job?.status === 'IN_PLANNER_BUILDER') return {status:"IN_PLANNER_BUILDER", action:"CREATE_ITINERARY"};
+          if(job?.status === 'IN_ITINERARY_SAVED') return {status:"IN_ITINERARY_SAVED", action:"ASSIGNED_ITINERARY"};
+          if(job?.status === 'IN_ITINERARY_ASSIGNED') return {status:"IN_ITINERARY_ASSIGNED", action:"START_ITINERARY"};
+          if(job?.status === 'ITINERARY_STARTED') return {status:"ITINERARY_STARTED", action:"DRIVE_NEXT_DELIVERY"};
+          if(job?.status === 'ON_THE_WAY') return {status:"ON_THE_WAY", action:"COMPLETE"};
+          if(job?.status === 'COMPLETED') return {status:"COMPLETED", action:"N/A"};
+          if(job?.status === 'CANCELED') return {status:"CANCELED", action:"N/A"};
+          if(job?.status === 'UNKNOWN') return {status:"UNKNOWN", action:"N/A"};
+      }
+      return {status:"UNKNOWN", action:"N/A"};
+  }        
+  
+
 
         const queryShopifyOrders = ():Promise<ShopifyGraphQLOrder[]> => {
             console.log('queryShopifyOrders');
@@ -112,7 +131,8 @@ console.log('flo OrderList');
             console.log('ordersdata', data);
             const ordersList = data.data.orders.edges.map(o => o.node) as ShopifyGraphQLOrder[];
             ordersList.forEach(o => {
-              o.createdAt = new Date(o.createdAt).toLocaleString()
+              o.createdAt = new Date(o.createdAt).toLocaleString('en-GB').replace(/(:\d{2}| [AP]M)$/, "");             
+              
             })
             return ordersList;
           })
@@ -150,7 +170,11 @@ console.log('flo OrderList');
             console.log('RmOrders:',JSON.stringify(jobs));
            // add associated RM job data to each shopify order, we have now all data we need: status on RM, track link...
            // list order item index order is ensure to be same as RM job index order, thus we map by index
-            const fullJobOrderList:JobOrder[] = ordersList.map((order,i) => ({...order, job:jobs[i]}));      
+            const fullJobOrderList:JobOrder[] = ordersList.map((order,i) => ({
+              ...order,
+              job:jobs[i],
+              statusAction:getStatusAction(order.displayFulfillmentStatus,jobs[i])
+            }));      
          //   setJobOrders(fullJobOrderList.slice());
             return fullJobOrderList.slice();
           })
@@ -238,7 +262,7 @@ console.log('flo OrderList');
           router.push(`/order-details/${selectedOrderId}`);
        }
 
-        const jobOrderRow = (list:JobOrder[]) => {
+        const jobOrderRows = (list:JobOrder[]) => {
           console.log('rowMarkup');
           return list.map((o,i)=>{
           return <OrderItem
@@ -267,13 +291,15 @@ console.log('flo OrderList');
         headings={[
           {title: 'Name'},
           {title: 'Created'},
-          {title: 'Customer'},          
-          {title: 'Fulfill'},
-          {title: 'RM Status'},
+          {title: 'Customer'},
+          {title: 'Price'},     
+          {title: 'Status'},
+          {title: 'Action'},
+          {title: 'items'},
         ]}
       >
         {
-          jobOrderRow(adminCtx.jobOrders.slice())
+          jobOrderRows(adminCtx.jobOrders.slice())
         }
       </IndexTable>
       }
@@ -291,48 +317,12 @@ console.log('flo OrderList');
                     { 
                       loadingMessage && <div  className={styles.refreshMessage}>{loadingMessage}</div>
                     }
-                 <p>Shop:{adminCtx.domain}</p>
-                 {/* <ResourceList>
-                    <Stack>
-                        <Stack.Item fill>
-                            Order Id
-                        </Stack.Item>
-                    </Stack>
-                    <Stack>
-                        <Stack.Item fill>
-                            Link
-                        </Stack.Item>
-                    </Stack>
-                    <Stack>
-                        <Stack.Item fill>
-                            RouteMagnet Status
-                        </Stack.Item>
-                    </Stack>
-                 </ResourceList> */}
+                
+               
               { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 &&
               IndexTableBlock()
-              //  <ResourceList
-              //   showHeader={true}
-              //   resourceName={{ singular: 'Order', plural: 'Orders' }}
-              //   items={adminCtx.jobOrders}
-              //   renderItem={(item,itemId, index) => {
-              //     const {id, name} = item;
-
-               
-              //     return (
-              //       <OrderItem
-              //         key={id}
-              //         id={id}
-              //         order={item}
-              //         onPushOrder={onPushToRM}
-              //         onFulfillOrder={onFulfillOneOrder}
-              //         isManualMode={adminCtx.mode.manual}
-              //         domain={adminCtx.domain}             
-              //       />
-              //      );
-              //    }}
-              //  />
-               }
+            
+              }
                </Card>            
 
 </React.Fragment>
