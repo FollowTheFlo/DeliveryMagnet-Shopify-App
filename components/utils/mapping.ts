@@ -17,4 +17,10 @@ const wordsMapping = {
     CANCEL:"Cancel"
 }
 
-export default wordsMapping;
+const currencyMapping = {
+    CAD:"$",
+    USD:"$",
+    EUR:"€"
+}
+
+export  {wordsMapping, currencyMapping};

@@ -16,7 +16,7 @@ import { Card,
   } from '@shopify/polaris';
 import { JobOrder } from '../../model/orders.model';
 import {CircleTickMajor, ArrowLeftMinor, CirclePlusOutlineMinor, ChevronDownMinor, ArrowDownMinor} from '@shopify/polaris-icons';
-import wordsMapping from '../utils/wordsMapping';
+import {wordsMapping, currencyMapping} from '../utils/mapping';
 
 interface JobOrderProps {
   order:JobOrder;

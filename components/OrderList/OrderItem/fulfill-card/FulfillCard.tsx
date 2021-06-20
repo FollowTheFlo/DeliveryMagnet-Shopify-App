@@ -14,6 +14,7 @@ import { Card,
     Badge,
   } from '@shopify/polaris';
 import { JobOrder } from '../../../../model/orders.model';
+import { currencyMapping } from '../../../utils/mapping';
 
 interface JobOrderProps {
   order:JobOrder;
@@ -21,6 +22,10 @@ interface JobOrderProps {
 
 const FulfillCard  = (props:JobOrderProps) => {
  const {order} = props;
+ const statusColorMapping = {
+   'UNFULFILLED' : 'attention',
+   'FULLFILLED' : 'new'
+ }
     return <Card>
 
     <Card.Section>
@@ -52,10 +57,10 @@ const FulfillCard  = (props:JobOrderProps) => {
              
               </Stack.Item>
               <Stack.Item>
-                {quantity} x {originalUnitPriceSet.shopMoney.amount}
+                {quantity} x { currencyMapping[order.totalPriceSet.shopMoney.currencyCode]}{originalUnitPriceSet.shopMoney.amount}
               </Stack.Item>
               <Stack.Item>
-                {fulfillmentStatus}
+                <Badge status={statusColorMapping[fulfillmentStatus] ?? 'new'}>{fulfillmentStatus}</Badge>
               </Stack.Item>
               </Stack>
             </ResourceList.Item>
@@ -64,7 +69,7 @@ const FulfillCard  = (props:JobOrderProps) => {
       />
     </Card.Section>
     <Card.Section>
-    Total: {order.totalPriceSet.shopMoney.currencyCode}{order.totalPriceSet.shopMoney.amount}
+    Total: { currencyMapping[order.totalPriceSet.shopMoney.currencyCode]}{order.totalPriceSet.shopMoney.amount}
     </Card.Section>
   </Card>
 }

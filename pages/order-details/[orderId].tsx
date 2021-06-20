@@ -26,7 +26,7 @@ import FulfillCard from '../../components/OrderList/OrderItem/fulfill-card/Fulfi
 import RouteMagnetCard from '../../components/RouteMagnetCard/RouteMagnetCard';
 import fetchApi from '../../components/utils/fetchApi';
 import { RmJob } from '../../model/jobs.model';
-import wordsMapping from '../../components/utils/wordsMapping';
+import {wordsMapping} from '../../components/utils/mapping';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 

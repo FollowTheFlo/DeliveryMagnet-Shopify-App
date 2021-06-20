@@ -22,7 +22,7 @@ import fetchApi from "../../utils/fetchApi";
 import LineItem from './lineItem/LineItem';
 import LineItemBlock from './lineItem/LineItem';
 import { StatusAction } from '../../../model/input.model';
-import wordsMapping from '../../utils/wordsMapping';
+import {wordsMapping, currencyMapping} from '../../utils/mapping';
 
 
 
@@ -172,7 +172,7 @@ const OrderItem = (props:OrderItemProps) => {
      
         const count = o.lineItems.edges.length;
         console.log('itemsCountCol',count);
-    return  (count + count === 1 ? " item" : " items")
+    return  count === 1 ? " item" : " items";
 }
 
 //    const lineItemsBlock = (o:JobOrder) => {
@@ -211,7 +211,7 @@ const OrderItem = (props:OrderItemProps) => {
                     {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}
                 </IndexTable.Cell>
                 <IndexTable.Cell>
-                {order?.totalPriceSet.shopMoney.currencyCode} {order?.totalPriceSet.shopMoney.amount}
+                { currencyMapping[order?.totalPriceSet.shopMoney.currencyCode]}{order?.totalPriceSet.shopMoney.amount}
                 </IndexTable.Cell>                            
                 <IndexTable.Cell >
                 {                    
@@ -225,7 +225,7 @@ const OrderItem = (props:OrderItemProps) => {
                 </IndexTable.Cell>
                 <IndexTable.Cell >
                 {
-                    itemsCountCol(order)
+                    order.lineItems.edges.length + itemsCountCol(order)
                 }
                 </IndexTable.Cell>
          
