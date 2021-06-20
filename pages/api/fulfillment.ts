@@ -46,9 +46,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     if(action === 'create') {
-      if(fulfillmentRes?.fulfillments?.length > 0) {
+      if(fulfillmentRes?.fulfillments?.length > 0 ) {
+        if(fulfillmentRes.fulfillments.findIndex(f => f.status === 'cancelled') === -1 ){
+          console.log('fulfill status is cancelled');
           res.status(200).json({success:false,message:'order already fulfilled'});
-          return;
+          return;}
       }
     
         const success = await postOrderFullfillment(headers, shop, orderId, uId);
