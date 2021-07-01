@@ -27,6 +27,9 @@ import RouteMagnetCard from '../../components/RouteMagnetCard/RouteMagnetCard';
 import fetchApi from '../../components/utils/fetchApi';
 import { RmJob } from '../../model/jobs.model';
 import {wordsMapping} from '../../components/utils/mapping';
+import { convertGraphQlToWebHookOrder } from '../../components/utils/convertion';
+import { SuccessResponse } from '../../model/responses.model';
+import axios from 'axios';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
@@ -48,9 +51,9 @@ const OrderDetails:React.FC = (props) => {
     setOrder(o);
   },[])
 
-  const onPushToRM = (whOrder:WHOrder) => {
-    console.log('onPushToRM', whOrder);
-    
+  const onPushToRM = (jOrder:JobOrder) => {
+    console.log('onPushToRM', jOrder);
+    const whOrder = convertGraphQlToWebHookOrder(jOrder,adminCtx.domain);        
   
     fetchApi({
       method:'post',
@@ -66,9 +69,42 @@ const OrderDetails:React.FC = (props) => {
         }
         const job = response as RmJob;
         adminCtx.onJobOrderPush({...job});
-        const o = adminCtx.jobOrders.find(o => o.id === orderId);
-         setOrder(o);
+
+         const o = adminCtx.jobOrders.find(o => o.id === orderId);
+        console.log('just pushed', o);
+         setOrder({
+           ...jOrder,
+          statusAction:{status:'IN_WAITING_QUEUE',action:''},
+          job:{...job,step:null}}
+         );
       })
+  }
+
+  const onFulfillOneOrder = (o:JobOrder) => {  
+    const orderId = o.id; // .replace('gid://shopify/Order/','')
+    axios.post('/api/fulfillment',{
+      action:'create',
+      orderId,
+      uId:o?.job?.uId ?? null,
+    })
+    .then(response => {
+      const result = response?.data as SuccessResponse;
+
+      console.log('response webhooks api', result);
+      console.log('response fulfillment api', response);
+      if(result.success) {
+       // onRefresh();
+       o.displayFulfillmentStatus = "FULFILLED";
+       o.statusAction = {status:"READY_FOR_DELIVERY", action:"PUSH_TO_ROUTEMAGNET"};
+      adminCtx.onOneJobOrderChange({...o});     
+      setOrder({...o});
+       
+      }
+                
+    })
+    .catch(err => {
+      console.log('err fulfillment', err);
+    })
   }
 
   
@@ -84,6 +120,8 @@ const OrderDetails:React.FC = (props) => {
 
   <Layout.Section>
     <FulfillCard
+     onPushOrder={onPushToRM}
+     onFulfillOrder={onFulfillOneOrder}
      order = {order}
     />
       

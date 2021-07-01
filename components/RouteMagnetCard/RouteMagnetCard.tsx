@@ -41,13 +41,20 @@ const RouteMagnetCard  = (props:JobOrderProps) => {
             <Badge status={badgeStatus}>
               {wordsMapping[status]}
             </Badge>
-          </Stack.Item>       
-        </Stack>
-        <Stack>
-          <Stack.Item>
+            
+          </Stack.Item>
+          <Stack.Item fill={false}>
           <Icon
             source={ChevronDownMinor}
             color="base" />
+            </Stack.Item>       
+        </Stack>
+        <Stack>
+          <Stack.Item>
+            <br/>
+          {/* <Icon
+            source={ChevronDownMinor}
+            color="base" /> */}
           </Stack.Item>
         </Stack>
       </React.Fragment>

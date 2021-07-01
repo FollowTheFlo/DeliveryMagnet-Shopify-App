@@ -8,6 +8,7 @@ export interface AdminContextType{
     domain:string;
     onDomainChange:(d:string) => void;
     jobOrders: JobOrder[];
+    onOneJobOrderChange:(j:JobOrder) => void;
     onJobOrdersChange:(j:JobOrder[]) => void;
     onJobOrderPush:(j:RmJob) => void;
     isIntegrated:boolean;

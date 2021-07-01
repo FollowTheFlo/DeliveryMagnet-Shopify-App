@@ -15,13 +15,14 @@ const AdminContext = React.createContext({
   onModeSelected: (option,value) => {}, 
   jobOrders:[],
   onJobOrdersChange: (jOrders) => {},
+  onOneJobOrderChange: (jOrder) => {},
   onJobOrderPush:(rMOrderWithStep) => {},
   isIntegrated:false,
   onIntegrationChange: (value) => {},
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
-  // initial state with all unchecked option
+  // WebHooks about automatic Push: initial state with all unchecked options
   // when first visit on Settings, we will fetch the active option from Shopify
   const [mode, setMode] = useState<WhMode>({
     manual:false,
@@ -57,20 +58,35 @@ export const AdminContextProvider = (props) => {
     setMode(updatedMode);
   };
 
-  const onJobOrdersHandler = (jList:JobOrder[]) => {
+  const onJobOrdersChangeHandler = (jList:JobOrder[]) => {
     console.log('onJobOrdersHandler',jList);
     setJobOrders(jList);
   }
 
+  const onOneJobOrderChangeHandler = (job:JobOrder) => {
+    console.log('onOneJobOrderChangeHandler',job);
+    // find index first
+    const index = jobOrders.findIndex(j => j.id === job.id);
+    if(index === -1) return;
+    const jobOrdersCopy = jobOrders.slice();
+    jobOrdersCopy[index] = job;
+    setJobOrders(jobOrdersCopy);
+  }
+
   const onJobOrderPushHandler = (rmJob:RmJob) => {
-    // note that step is present
+    // pushing to RM
     setJobOrders((prevJobOrders:JobOrder[]) => {
       const updatedJobOrders = prevJobOrders.slice();
-      const index = updatedJobOrders.findIndex(o => (o && o.id && o.id == rmJob.extId));
+      const index = updatedJobOrders.findIndex(o => (o && o.id == rmJob.extId));
       console.log('index prevJobOrders', index);
       if(index != -1) {
         // adding step with null value as new job, not in any itinerary
-        const updatedJob = {...updatedJobOrders[index],job:{...rmJob,step:null}} as JobOrder;            
+        const updatedJob = {
+          ...updatedJobOrders[index],
+          statusAction:{status:'IN_WAITING_QUEUE',action:''},
+          job:{...rmJob,step:null}
+        
+        } as JobOrder;            
         updatedJobOrders[index] = updatedJob;
         console.log('prev2',prevJobOrders);        
       }
@@ -91,7 +107,8 @@ export const AdminContextProvider = (props) => {
         domain: domain,
         onDomainChange: domainHandler,
         jobOrders:jobOrders,
-        onJobOrdersChange: onJobOrdersHandler,
+        onJobOrdersChange: onJobOrdersChangeHandler,
+        onOneJobOrderChange: onOneJobOrderChangeHandler,
         onJobOrderPush: onJobOrderPushHandler,
         isIntegrated: isIntegrated,
         onIntegrationChange: onIntegrationHandler,

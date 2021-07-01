@@ -84,6 +84,7 @@ export interface Shipping_line
         id
         name
         displayFulfillmentStatus
+        displayFinancialStatus:string;
         test
         cancelReason
         createdAt
@@ -158,7 +159,7 @@ export interface Shipping_line
       id
       title:string;
       quantity:number;      
-      fulfillmentStatus
+      fulfillmentStatus;     
       sku:string;
       product: {
         id

@@ -13,22 +13,42 @@ import { Card,
     Heading,
     Badge,
   } from '@shopify/polaris';
-import { JobOrder } from '../../../../model/orders.model';
-import { currencyMapping } from '../../../utils/mapping';
+import { JobOrder, WHOrder } from '../../../../model/orders.model';
+import { currencyMapping, wordsMapping } from '../../../utils/mapping';
+import { useReactiveVar } from '@apollo/client';
 
 interface JobOrderProps {
   order:JobOrder;
+  onPushOrder:(o:JobOrder)=>void;
+  onFulfillOrder:(o:JobOrder)=>void;
 }
 
+
 const FulfillCard  = (props:JobOrderProps) => {
- const {order} = props;
+ const {order, onPushOrder, onFulfillOrder} = props;
  const statusColorMapping = {
    'UNFULFILLED' : 'attention',
    'FULLFILLED' : 'new'
  }
-    return <Card>
 
-    <Card.Section>
+ const onActionClicked = (action:string) => {
+  console.log('onAction',action);
+  if(action === 'PUSH_TO_ROUTEMAGNET') {
+    onPushOrder({...order});
+    return;
+  }
+  if(action === 'PREPARE_DELIVERY') {
+    if(order.displayFulfillmentStatus !== 'UNFULFILLED') return;
+
+    onFulfillOrder({...order});
+  }
+ }
+
+
+const displayCardSections = () => {
+return (
+  <React.Fragment>
+        <Card.Section>
       <ResourceList
         resourceName={{singular: 'product', plural: 'products'}}
         items={order.lineItems.edges}
@@ -71,7 +91,31 @@ const FulfillCard  = (props:JobOrderProps) => {
     <Card.Section>
     Total: { currencyMapping[order.totalPriceSet.shopMoney.currencyCode]}{order.totalPriceSet.shopMoney.amount}
     </Card.Section>
-  </Card>
+  </React.Fragment>
+)
+}
+
+    return order.statusAction.action ? (<Card
+    
+    secondaryFooterActions={[{content: 'More', onAction: () => onActionClicked('test')}]}
+    primaryFooterAction={{
+      content: wordsMapping[order.statusAction.action],
+      onAction: () => onActionClicked(order.statusAction.action)
+    }}
+    >
+      {
+      displayCardSections()
+      }
+
+  </Card>)
+  :
+  (
+    <Card>
+      {
+      displayCardSections()
+      }
+    </Card>
+  )
 }
 
 export default FulfillCard;

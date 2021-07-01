@@ -23,4 +23,39 @@ const currencyMapping = {
     EUR:"€"
 }
 
-export  {wordsMapping, currencyMapping};
+const paidStatusMapping = {
+    AUTHORIZED:{
+        value:"Authorized",
+        color:"attention"
+    },
+    EXPIRED:{
+        value:"Expired",
+        color:"attention"
+    },
+    PAID:{
+        value:"Paid",
+        color:"new"
+    },
+    PARTIALLY_PAID:{
+        value:"Partially paid",
+        color:"attention"
+    },
+    PARTIALLY_REFUNDED:{
+        value:"Partially refunded",
+        color:"attention"
+    },
+    PENDING:{
+        value:"Pending",
+        color:"attention"
+    },
+    REFUNDED:{
+        value:"Refunded",
+        color:"attention"
+    },
+    VOIDED:{
+        value:"Voided",
+        color:"attention"
+    }
+}
+
+export  {wordsMapping, currencyMapping, paidStatusMapping};

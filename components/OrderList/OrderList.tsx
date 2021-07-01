@@ -34,6 +34,7 @@ import { AdminContextType } from '../../model/context.model';
 import { SuccessResponse } from '../../model/responses.model';
 import { SelectionType } from '@shopify/polaris/dist/types/latest/src/utilities/index-provider';
 import { StatusAction } from '../../model/input.model';
+import { convertGraphQlToWebHookOrder } from '../utils/convertion';
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -105,17 +106,17 @@ console.log('flo OrderList');
       if(displayFulfillmentStatus === 'UNFULFILLED') return {status:"UNFULFILLED", action:"PREPARE_DELIVERY"};
       if(displayFulfillmentStatus === 'FULFILLED' ){ 
           if(!job || !job.uId) return {status:"READY_FOR_DELIVERY", action:"PUSH_TO_ROUTEMAGNET"};
-          if(job?.status === 'IN_WAITING_QUEUE') return {status:"IN_WAITING_QUEUE", action:"SELECT_DELIVERY"};
-          if(job?.status === 'IN_PLANNER_BUILDER') return {status:"IN_PLANNER_BUILDER", action:"CREATE_ITINERARY"};
-          if(job?.status === 'IN_ITINERARY_SAVED') return {status:"IN_ITINERARY_SAVED", action:"ASSIGNED_ITINERARY"};
-          if(job?.status === 'IN_ITINERARY_ASSIGNED') return {status:"IN_ITINERARY_ASSIGNED", action:"START_ITINERARY"};
-          if(job?.status === 'ITINERARY_STARTED') return {status:"ITINERARY_STARTED", action:"DRIVE_NEXT_DELIVERY"};
-          if(job?.status === 'ON_THE_WAY') return {status:"ON_THE_WAY", action:"COMPLETE"};
-          if(job?.status === 'COMPLETED') return {status:"COMPLETED", action:"N/A"};
-          if(job?.status === 'CANCELED') return {status:"CANCELED", action:"N/A"};
-          if(job?.status === 'UNKNOWN') return {status:"UNKNOWN", action:"N/A"};
+          if(job?.status === 'IN_WAITING_QUEUE') return {status:"IN_WAITING_QUEUE", action:""};
+          if(job?.status === 'IN_PLANNER_BUILDER') return {status:"IN_PLANNER_BUILDER", action:""};
+          if(job?.status === 'IN_ITINERARY_SAVED') return {status:"IN_ITINERARY_SAVED", action:""};
+          if(job?.status === 'IN_ITINERARY_ASSIGNED') return {status:"IN_ITINERARY_ASSIGNED", action:""};
+          if(job?.status === 'ITINERARY_STARTED') return {status:"ITINERARY_STARTED", action:""};
+          if(job?.status === 'ON_THE_WAY') return {status:"ON_THE_WAY", action:""};
+          if(job?.status === 'COMPLETED') return {status:"COMPLETED", action:""};
+          if(job?.status === 'CANCELED') return {status:"CANCELED", action:""};
+          if(job?.status === 'UNKNOWN') return {status:"UNKNOWN", action:""};
       }
-      return {status:"UNKNOWN", action:"N/A"};
+      return {status:"UNKNOWN", action:""};
   }        
   
 
@@ -154,7 +155,7 @@ console.log('flo OrderList');
           })
 
           const orderIDsList = ordersList.map(o => o.id);
-          //ordersList ist is string[]
+          //ordersList is string[]
           console.log('queryRmOrders orderIDsList',orderIDsList);
           const obj =  {
             shop:"shop",
@@ -175,7 +176,7 @@ console.log('flo OrderList');
               job:jobs[i],
               statusAction:getStatusAction(order.displayFulfillmentStatus,jobs[i])
             }));      
-         //   setJobOrders(fullJobOrderList.slice());
+        
             return fullJobOrderList.slice();
           })
           .catch(err => {
@@ -197,10 +198,12 @@ console.log('flo OrderList');
         }
 
 
-        const onPushToRM = (whOrder:WHOrder) => {
-          console.log('onPushToRM', whOrder);
+        const onPushToRM = (jOrder:JobOrder) => {
+          console.log('onPushToRM', jOrder);
           console.log('setPreventSel', true);
+          console.log('domain', adminCtx.domain);
           preventRowSelection = true;
+          const whOrder = convertGraphQlToWebHookOrder(jOrder,adminCtx.domain);         
 
         
           fetchApi({
@@ -209,13 +212,14 @@ console.log('flo OrderList');
             url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
           })
             .then(response => {
-              console.log('response job', response);
+             
               // if error, object returned has property error
               if(response.error) {
                 console.log(response.error);
                 return;
               }
               const job = response as RmJob;
+              console.log('push job', job);
               adminCtx.onJobOrderPush({...job});
             })
         }
@@ -292,7 +296,8 @@ console.log('flo OrderList');
           {title: 'Name'},
           {title: 'Created'},
           {title: 'Customer'},
-          {title: 'Price'},     
+          {title: 'Price'},
+          {title: 'Payment'}, 
           {title: 'Status'},
           {title: 'Action'},
           {title: 'items'},
