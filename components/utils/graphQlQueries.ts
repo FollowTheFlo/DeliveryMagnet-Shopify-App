@@ -37,6 +37,7 @@ const GET_ORDERS = gql`
         id
         name
         displayFulfillmentStatus
+        displayFinancialStatus
         test
         createdAt
         cancelReason
@@ -105,7 +106,7 @@ const GET_ORDERS = gql`
             node {              
               id
               title
-              fulfillmentStatus
+              fulfillmentStatus             
               image {
                 id
                 originalSrc
