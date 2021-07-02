@@ -61,7 +61,7 @@ console.log('flo OrderList');
     // const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
     
 
-    useEffect(() => {
+   useEffect(() => {
 
       if(adminCtx.domain) {
         console.log('domain already set');
@@ -312,8 +312,7 @@ console.log('flo OrderList');
       return (
         
         <React.Fragment>
-              <Card>
-                  <div  className={styles.refreshMessage}>
+          <div  className={styles.refreshMessage}>
                    <Button onClick={() => onRefresh()}>
                             Refresh
                     </Button>
@@ -322,6 +321,8 @@ console.log('flo OrderList');
                     { 
                       loadingMessage && <div  className={styles.refreshMessage}>{loadingMessage}</div>
                     }
+              <Card>
+                  
                 
                
               { adminCtx.jobOrders && adminCtx.jobOrders.length > 0 &&

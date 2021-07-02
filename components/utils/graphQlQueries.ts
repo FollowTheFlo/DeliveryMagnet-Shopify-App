@@ -31,7 +31,7 @@ const GET_PRODUCTS_BY_ID = gql`
 
 const GET_ORDERS = gql`
   query{
-    orders(first: 5, reverse: true) {
+    orders(first: 50, reverse: true) {
     edges {
         node {
         id
@@ -77,7 +77,7 @@ const GET_ORDERS = gql`
           firstName
           lastName
         }        
-        shippingLines(first: 5)
+        shippingLines(first: 50)
         {
            edges {
               node{
@@ -101,7 +101,7 @@ const GET_ORDERS = gql`
         	  }
           }
         }
-        lineItems(first: 2) {
+        lineItems(first: 50) {
           edges {
             node {              
               id

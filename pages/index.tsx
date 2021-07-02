@@ -41,7 +41,7 @@ const Index:React.FC = (props) => {
     },
     {
       id: 'config',
-      content: 'Config',    },
+      content: 'Settings',    },
   ];
 
 

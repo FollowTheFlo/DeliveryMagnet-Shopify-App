@@ -78,32 +78,44 @@ const Settings:React.FC = (props) => {
     }
   
     return (
-      <Stack vertical>
-        <RadioButton
-          label="Push manualy only"
-          helpText="Push orders manually into RouteMagnet queue from Orders tabs"
-          checked={adminCtx.mode.manual}
-          id="manual"
-          name="transferMode"
-          onChange={handleChange}
-        />
-        <RadioButton
-          label="Automatic push when orders get created"
-          helpText="Orders are pushed to RouteMagnet Delivery queue when an order is confirmed"
-          id="auto_create"
-          name="transferMode"
-          checked={adminCtx.mode.auto_create}
-          onChange={handleChange}
-        />
-         <RadioButton
-          label="Automatic push when order get fullfilled"
-          helpText="Orders are pushed to RouteMagnet Delivery queue when an order is fullfilled"
-          id="auto_fullfill"
-          name="transferMode"
-          checked={adminCtx.mode.auto_fullfill}
-          onChange={handleChange}
-        />
-      </Stack>
+      <React.Fragment>
+       <br/> 
+      
+      <Card title="Orders Push Methods from Shopify to RouteMagnet">
+        <Card.Section>
+        <Stack vertical>
+          <RadioButton
+            label="Manualy"
+            helpText="Push orders manually into RouteMagnet queue from Orders tabs"
+            checked={adminCtx.mode.manual}
+            id="manual"
+            name="transferMode"
+            onChange={handleChange}
+          />
+          {/* <RadioButton
+            label="Automatic push when orders get created"
+            helpText="Orders are pushed to RouteMagnet Delivery queue when an order is confirmed"
+            id="auto_create"
+            name="transferMode"
+            checked={adminCtx.mode.auto_create}
+            onChange={handleChange}
+          /> */}
+          <RadioButton
+            label="Automatically when order get fullfilled"
+            helpText="Orders are pushed to RouteMagnet Delivery queue when an order is fullfilled"
+            id="auto_fullfill"
+            name="transferMode"
+            checked={adminCtx.mode.auto_fullfill}
+            onChange={handleChange}
+          />
+        </Stack>
+        </Card.Section>
+      </Card>
+      <Card title="Delivery Service time">
+        <Card.Section>
+        </Card.Section>
+      </Card>
+      </React.Fragment>
     );
 }
 

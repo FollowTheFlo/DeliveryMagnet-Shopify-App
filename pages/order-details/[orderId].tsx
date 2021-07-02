@@ -30,6 +30,7 @@ import {wordsMapping} from '../../components/utils/mapping';
 import { convertGraphQlToWebHookOrder } from '../../components/utils/convertion';
 import { SuccessResponse } from '../../model/responses.model';
 import axios from 'axios';
+import CustomerCard from '../../components/CustomerCard/CustomerCard';
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
@@ -118,7 +119,7 @@ const OrderDetails:React.FC = (props) => {
 >
   <Layout>
 
-  <Layout.Section>
+  <Layout.Section oneThird>
     <FulfillCard
      onPushOrder={onPushToRM}
      onFulfillOrder={onFulfillOneOrder}
@@ -126,13 +127,27 @@ const OrderDetails:React.FC = (props) => {
     />
       
   </Layout.Section>
-  <Layout.Section secondary>
+  <Layout.Section oneThird>
     <RouteMagnetCard
+     onPushOrder={onPushToRM}
+     onFulfillOrder={onFulfillOneOrder}
      order = {order}
     />
   
   </Layout.Section>
-  </Layout> </Page> :
+  <Layout.Section oneThird>
+      <CustomerCard
+      onPushOrder={onPushToRM}
+      onFulfillOrder={onFulfillOneOrder}
+      order = {order}
+      />
+    
+    </Layout.Section>
+
+  </Layout> 
+  
+  
+  </Page> :
   <p>Loading Order</p>
  
 }

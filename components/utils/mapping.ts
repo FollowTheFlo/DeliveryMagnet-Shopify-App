@@ -58,4 +58,9 @@ const paidStatusMapping = {
     }
 }
 
-export  {wordsMapping, currencyMapping, paidStatusMapping};
+const statusBadgeColorMapping = {
+    'UNFULFILLED' : 'attention',
+    'FULLFILLED' : 'new'
+  }
+
+export  {statusBadgeColorMapping, wordsMapping, currencyMapping, paidStatusMapping};

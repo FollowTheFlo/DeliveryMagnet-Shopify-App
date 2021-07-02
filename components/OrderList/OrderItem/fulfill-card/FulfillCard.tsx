@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Card, 
     ResourceList,
     Stack,
@@ -14,22 +14,17 @@ import { Card,
     Badge,
   } from '@shopify/polaris';
 import { JobOrder, WHOrder } from '../../../../model/orders.model';
-import { currencyMapping, wordsMapping } from '../../../utils/mapping';
+import { currencyMapping, statusBadgeColorMapping, wordsMapping } from '../../../utils/mapping';
 import { useReactiveVar } from '@apollo/client';
+import { JobOrderProps } from '../../../../model/input.model';
 
-interface JobOrderProps {
-  order:JobOrder;
-  onPushOrder:(o:JobOrder)=>void;
-  onFulfillOrder:(o:JobOrder)=>void;
-}
+
 
 
 const FulfillCard  = (props:JobOrderProps) => {
  const {order, onPushOrder, onFulfillOrder} = props;
- const statusColorMapping = {
-   'UNFULFILLED' : 'attention',
-   'FULLFILLED' : 'new'
- }
+
+
 
  const onActionClicked = (action:string) => {
   console.log('onAction',action);
@@ -80,7 +75,7 @@ return (
                 {quantity} x { currencyMapping[order.totalPriceSet.shopMoney.currencyCode]}{originalUnitPriceSet.shopMoney.amount}
               </Stack.Item>
               <Stack.Item>
-                <Badge status={statusColorMapping[fulfillmentStatus] ?? 'new'}>{fulfillmentStatus}</Badge>
+                <Badge status={statusBadgeColorMapping[fulfillmentStatus] ?? 'new'}>{fulfillmentStatus}</Badge>
               </Stack.Item>
               </Stack>
             </ResourceList.Item>
@@ -94,14 +89,17 @@ return (
   </React.Fragment>
 )
 }
-
+    // display bottom action button if action property not null
     return order.statusAction.action ? (<Card
-    
-    secondaryFooterActions={[{content: 'More', onAction: () => onActionClicked('test')}]}
+      title="Items"
     primaryFooterAction={{
       content: wordsMapping[order.statusAction.action],
       onAction: () => onActionClicked(order.statusAction.action)
     }}
+    actions={[{
+      content: wordsMapping[order.statusAction.action],
+      onAction: () => onActionClicked(order.statusAction.action)
+    }]}
     >
       {
       displayCardSections()
@@ -110,7 +108,7 @@ return (
   </Card>)
   :
   (
-    <Card>
+    <Card title="Items">
       {
       displayCardSections()
       }
