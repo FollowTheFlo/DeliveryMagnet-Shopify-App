@@ -13,4 +13,6 @@ export interface AdminContextType{
     onJobOrderPush:(j:RmJob) => void;
     isIntegrated:boolean;
     onIntegrationChange: (value:boolean) => void;
+    defaultServiceDuration:number;
+    onDefaultServiceDurationChange: (value:number) => void;
 }
