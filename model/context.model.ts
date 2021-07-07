@@ -1,3 +1,4 @@
+import { PageInfo } from "./input.model";
 import { RmJob, RmJobWithStep } from "./jobs.model";
 import { JobOrder } from "./orders.model";
 import { WhMode } from "./webhooks.model";
@@ -15,4 +16,6 @@ export interface AdminContextType{
     onIntegrationChange: (value:boolean) => void;
     defaultServiceDuration:number;
     onDefaultServiceDurationChange: (value:number) => void;
+    pageInfo:PageInfo,
+    onPageInfoChange: (value:PageInfo) => void,
 }

@@ -21,19 +21,20 @@ import { Card,
     Badge,
     IndexTable,
     useIndexResourceState,
+    Pagination,
 } from '@shopify/polaris';
 import OrderItem from './OrderItem/OrderItem';
 import store from 'store-js';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { Context, useAppBridge } from '@shopify/app-bridge-react';
-import { GET_DOMAIN, GET_ORDERS, GET_PRODUCTS_BY_ID } from '../utils/graphQlQueries'
+import { GET_DOMAIN, GET_ORDERS, GET_ORDERS_AFTER, GET_ORDERS_PREVIOUS, GET_PRODUCTS_BY_ID } from '../utils/graphQlQueries'
 import fetchApi from '../utils/fetchApi';
 import { JobOrder, ShopifyGraphQLOrder, WHOrder } from '../../model/orders.model';
 import { RmJob, RmJobWithStep } from '../../model/jobs.model';
 import { AdminContextType } from '../../model/context.model';
 import { SuccessResponse } from '../../model/responses.model';
 import { SelectionType } from '@shopify/polaris/dist/types/latest/src/utilities/index-provider';
-import { StatusAction } from '../../model/input.model';
+import { CursorSelection, PageInfo, StatusAction } from '../../model/input.model';
 import { convertGraphQlToWebHookOrder } from '../utils/convertion';
 import { ShopifyConfig } from '../../model/config.model';
 
@@ -59,6 +60,7 @@ console.log('flo OrderList');
     const [refreshDate, setRefreshDate] = useState<string>('');
     // inform on loading stage: requesting data on shopify or RM
     const [loadingMessage, setLoadingMessage] = useState<string>('');
+    let pageInfo:PageInfo = null;
     // const { loading, error, data, networkStatus } = useQuery(GET_DOMAIN);
     
 
@@ -87,10 +89,10 @@ console.log('flo OrderList');
       .catch(err => console.log('err', err))
     }, [])
 
-    const fetchJobOrders = () => {
+    const fetchJobOrders = (cursor?:CursorSelection) => {
       console.log('fetchJobOrders');
       setLoadingMessage('Loading Shopify Orders');
-      queryShopifyOrders()
+      queryShopifyOrders(cursor)
       .then(shopifyOrders => {
         console.log('return queryShopifyOrders', shopifyOrders);
         setLoadingMessage('Loading RouteMagnet data');
@@ -99,6 +101,8 @@ console.log('flo OrderList');
       .then(data => {
         console.log('return data', data);        
         adminCtx.onJobOrdersChange(data);
+        console.log('pageInfo before ctx', pageInfo);
+        adminCtx.onPageInfoChange(pageInfo);
         setRefreshDate(new Date().toLocaleString());
         setLoadingMessage('');
       })
@@ -129,16 +133,29 @@ console.log('flo OrderList');
  
 
 
-        const queryShopifyOrders = ():Promise<ShopifyGraphQLOrder[]> => {
-            console.log('queryShopifyOrders');
-           
+        const queryShopifyOrders = (cursor?:CursorSelection):Promise<ShopifyGraphQLOrder[]> => {
+            console.log('queryShopifyOrders',cursor);
+           let gqlQuery = GET_ORDERS;
+           if(cursor?.action === 'after') (gqlQuery = GET_ORDERS_AFTER(cursor.value))
+           if(cursor?.action === 'before') (gqlQuery = GET_ORDERS_PREVIOUS(cursor.value))
           // Graphl Apollo client
           // fetch Shopify orders
-          return client.query({ query: GET_ORDERS, fetchPolicy: "no-cache" })
+          return client.query({ query: gqlQuery, fetchPolicy: "no-cache" })
           .then(data => {
             // go through encapsulation data.data.orders.edges
             console.log('ordersdata', data);
-            const ordersList = data.data.orders.edges.map(o => o.node) as ShopifyGraphQLOrder[];
+          
+            if(data?.data?.orders?.pageInfo) {
+              console.log('set pageInfo');
+              pageInfo = data.data.orders.pageInfo;
+            }
+            const ordersList = data.data.orders.edges.map(o =>  {
+              return {
+                ...o.node,
+                cursor:o.cursor,
+                //createdAt:new Date(o.createdAt).toLocaleString('en-GB').replace(/(:\d{2}| [AP]M)$/, "")
+              }
+            }) as ShopifyGraphQLOrder[];
             ordersList.forEach(o => {
               o.createdAt = new Date(o.createdAt).toLocaleString('en-GB').replace(/(:\d{2}| [AP]M)$/, "");             
               
@@ -320,10 +337,38 @@ console.log('flo OrderList');
         }
       </IndexTable>
       }
+
+      const onPaginationPrevious = () => {
+        console.log('onPaginationPrevious');
+        const firstCursor = adminCtx.jobOrders[0].cursor;
+        if(!firstCursor)return;
+
+        console.log('firstCursor',firstCursor);
+
+        fetchJobOrders({
+          action:'before',
+          value:firstCursor
+        })
+      }
+      const onPaginationNext = () => {
+        console.log('onPaginationNext');
+        const lastCursor = adminCtx.jobOrders[adminCtx.jobOrders.length - 1].cursor;
+        if(!lastCursor)return;
+
+        console.log('lastCursor',lastCursor);
+
+        fetchJobOrders({
+          action:'after',
+          value:lastCursor
+        })
+      }
   
       return (
         
         <React.Fragment>
+          {/* <p>hasPrevious: {adminCtx.pageInfo.hasPreviousPage ? 'yes' : 'no'}</p>
+          <p>hasNext: {adminCtx.pageInfo.hasNextPage ? 'yes' : 'no'}</p> */}
+         
           <div  className={styles.refreshMessage}>
                    <Button onClick={() => onRefresh()}>
                             Refresh
@@ -341,7 +386,14 @@ console.log('flo OrderList');
               IndexTableBlock()
             
               }
-               </Card>            
+              
+               </Card>
+               <Pagination
+            hasPrevious={adminCtx.pageInfo.hasPreviousPage}
+            onPrevious={onPaginationPrevious}
+            hasNext={adminCtx.pageInfo.hasNextPage}
+            onNext={onPaginationNext}
+          />     
 
 </React.Fragment>
         )

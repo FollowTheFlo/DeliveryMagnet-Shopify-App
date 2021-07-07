@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminContextType } from '../model/context.model';
+import { PageInfo } from '../model/input.model';
 import { RmJob, RmJobWithStep } from '../model/jobs.model';
 import { JobOrder } from '../model/orders.model';
 import { WhMode } from '../model/webhooks.model';
@@ -21,6 +22,8 @@ const AdminContext = React.createContext({
   onIntegrationChange: (value) => {},
   defaultServiceDuration: 0,
   onDefaultServiceDurationChange: (value) => {},
+  pageInfo: null,
+  onPageInfoChange: (value) => {},
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
@@ -36,6 +39,7 @@ export const AdminContextProvider = (props) => {
   const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
   const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
   const [defaultServiceDuration, setDefaultServiceDuration] = useState(0);
+  const [pageInfo, setPageInfo] = useState({hasPreviousPage:false,hasNextPage:false});
   useEffect(() => {
     // get mode from server
     console.log('admin context');
@@ -106,6 +110,11 @@ export const AdminContextProvider = (props) => {
     setIsIntegrated(val);
   }
 
+  const onPageInfoChangeHandler = (val:PageInfo) => {
+    console.log('onPageInfoChangeHandler:', val);
+    setPageInfo(val);
+  }
+
   return (
     <AdminContext.Provider
       value={{
@@ -121,6 +130,8 @@ export const AdminContextProvider = (props) => {
         onIntegrationChange: onIntegrationHandler,
         defaultServiceDuration: defaultServiceDuration,
         onDefaultServiceDurationChange: onDefaultServiceDurationChangeHandler,
+        pageInfo: pageInfo,
+        onPageInfoChange: onPageInfoChangeHandler,
       }}
     >
       {props.children}

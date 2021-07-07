@@ -81,6 +81,7 @@ export interface Shipping_line
     }
 
     export interface ShopifyGraphQLOrder {
+       cursor
         id
         name
         displayFulfillmentStatus

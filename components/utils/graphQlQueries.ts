@@ -32,7 +32,212 @@ const GET_PRODUCTS_BY_ID = gql`
 const GET_ORDERS = gql`
   query{
     orders(first: 20, reverse: true) {
-    edges {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
+     edges {
+        cursor
+        node {
+        id
+        name
+        displayFulfillmentStatus
+        displayFinancialStatus
+        test
+        createdAt
+        cancelReason
+        cancelledAt
+        email
+        phone    
+        confirmed
+        fullyPaid
+        note
+        requiresShipping
+        customer{
+          email
+          phone
+        }
+        totalPriceSet{
+          shopMoney {
+              amount
+              currencyCode
+            }
+          }    
+        shippingAddress {
+          address1
+          address2
+          city
+          provinceCode
+          zip          
+          country
+          latitude
+          longitude
+          firstName
+          lastName
+        }        
+        shippingLines(first: 5)
+        {
+           edges {
+              node{
+                phone
+                carrierIdentifier
+                 id
+                discountedPriceSet {
+                    shopMoney {
+                    amount
+                    }
+                }
+                originalPriceSet {
+                    shopMoney {
+                    amount
+                    }
+                }             
+                deliveryCategory
+                source
+                code
+                title             
+        	  }
+          }
+        }
+        lineItems(first: 5) {
+          edges {
+            node {              
+              id
+              title
+              fulfillmentStatus             
+              image {
+                id
+                originalSrc
+              }
+              quantity
+              originalUnitPriceSet {
+                  shopMoney {
+                      amount
+                  }
+              }
+              name
+              sku
+              product {
+                id
+              }       
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`;
+
+const GET_ORDERS_AFTER = (cursorVal:string) => gql`
+  query{
+    orders(first: 20, reverse: true, after:"${cursorVal}") {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
+     edges {
+        cursor
+        node {
+        id
+        name
+        displayFulfillmentStatus
+        displayFinancialStatus
+        test
+        createdAt
+        cancelReason
+        cancelledAt
+        email
+        phone    
+        confirmed
+        fullyPaid
+        note
+        requiresShipping
+        customer{
+          email
+          phone
+        }
+        totalPriceSet{
+          shopMoney {
+              amount
+              currencyCode
+            }
+          }    
+        shippingAddress {
+          address1
+          address2
+          city
+          provinceCode
+          zip          
+          country
+          latitude
+          longitude
+          firstName
+          lastName
+        }        
+        shippingLines(first: 5)
+        {
+           edges {
+              node{
+                phone
+                carrierIdentifier
+                 id
+                discountedPriceSet {
+                    shopMoney {
+                    amount
+                    }
+                }
+                originalPriceSet {
+                    shopMoney {
+                    amount
+                    }
+                }             
+                deliveryCategory
+                source
+                code
+                title             
+        	  }
+          }
+        }
+        lineItems(first: 5) {
+          edges {
+            node {              
+              id
+              title
+              fulfillmentStatus             
+              image {
+                id
+                originalSrc
+              }
+              quantity
+              originalUnitPriceSet {
+                  shopMoney {
+                      amount
+                  }
+              }
+              name
+              sku
+              product {
+                id
+              }       
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`;
+
+const GET_ORDERS_PREVIOUS = (cursorVal:string) => gql`
+  query{
+    orders(last: 20, reverse: true, before:"${cursorVal}") {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
+     edges {
+        cursor
         node {
         id
         name
@@ -136,4 +341,4 @@ const GET_DOMAIN = gql`
 
   }`
 
-export { GET_DOMAIN, GET_ORDERS, GET_PRODUCTS_BY_ID}
+export { GET_DOMAIN, GET_ORDERS, GET_ORDERS_AFTER, GET_ORDERS_PREVIOUS, GET_PRODUCTS_BY_ID}
