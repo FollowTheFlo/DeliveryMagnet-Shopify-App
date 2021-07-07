@@ -31,7 +31,7 @@ const GET_PRODUCTS_BY_ID = gql`
 
 const GET_ORDERS = gql`
   query{
-    orders(first: 10, reverse: true) {
+    orders(first: 25, reverse: true) {
     edges {
         node {
         id
@@ -43,8 +43,7 @@ const GET_ORDERS = gql`
         cancelReason
         cancelledAt
         email
-        phone
-        clientIp
+        phone    
         confirmed
         fullyPaid
         note
@@ -58,13 +57,7 @@ const GET_ORDERS = gql`
               amount
               currencyCode
             }
-          }
-        subtotalPriceSet{
-        shopMoney {
-            amount
-            currencyCode
-            }
-        }
+          }    
         shippingAddress {
           address1
           address2

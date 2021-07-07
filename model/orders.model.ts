@@ -90,8 +90,7 @@ export interface Shipping_line
         createdAt
         cancelledAt
         email
-        phone
-        clientIp
+        phone        
         confirmed
         fullyPaid
         note
@@ -105,13 +104,7 @@ export interface Shipping_line
               amount
               currencyCode
             }
-          }
-        subtotalPriceSet: {
-        shopMoney: {
-            amount
-            currencyCode
-            }
-        }
+          }        
         shippingAddress: {
           address1
           address2
