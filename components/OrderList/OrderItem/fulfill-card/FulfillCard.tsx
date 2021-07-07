@@ -90,12 +90,12 @@ return (
 )
 }
     // display bottom action button if action property not null
-    return order.statusAction.action ? (<Card
+    return order.statusAction.action && !order.cancelledAt ? (<Card
       title="Items"
     primaryFooterAction={{
       content: wordsMapping[order.statusAction.action],
       onAction: () => onActionClicked(order.statusAction.action)
-    }}
+     }}
     actions={[{
       content: wordsMapping[order.statusAction.action],
       onAction: () => onActionClicked(order.statusAction.action)

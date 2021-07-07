@@ -77,6 +77,9 @@ const OrderItem = (props:OrderItemProps) => {
     const actionCol = (o:JobOrder) => {
        // const statusAction = getStatusAction(o);
        console.log('status flo',o.statusAction);
+       // no action button if order is canceled
+       if(o.cancelledAt) return "";
+
        if(btnLoading) {
          return <Spinner accessibilityLabel="Loading" size="small" />
        }
@@ -128,19 +131,43 @@ const OrderItem = (props:OrderItemProps) => {
                 <IndexTable.Cell >
              
                     <TextStyle variation="strong">
-                    {order.name}
+                    { 
+                        order.cancelledAt ? 
+                            <del>{order.name}</del>
+                            :    
+                             order.name
+                    }
+                    
                     </TextStyle>
                       
 
                 </IndexTable.Cell>
                 <IndexTable.Cell>
-                    {order?.createdAt}
+                { 
+                    order.cancelledAt ? 
+                        <del> {order?.createdAt}</del>
+                        :    
+                        order?.createdAt
+                }
+                   
                 </IndexTable.Cell>
                 <IndexTable.Cell>
-                    {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}
+                { 
+                    order.cancelledAt ? 
+                        <del> {order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}</del>
+                        :    
+                        <p>{order?.shippingAddress?.firstName} {order?.shippingAddress?.lastName}</p>
+                }
+                    
                 </IndexTable.Cell>
                 <IndexTable.Cell>
-                { currencyMapping[order?.totalPriceSet.shopMoney.currencyCode]}{order?.totalPriceSet.shopMoney.amount}
+                { 
+                    order.cancelledAt ? 
+                        <del> { currencyMapping[order?.totalPriceSet.shopMoney.currencyCode]}{order?.totalPriceSet.shopMoney.amount}</del>
+                        :    
+                        <p>{currencyMapping[order?.totalPriceSet.shopMoney.currencyCode]}{order?.totalPriceSet.shopMoney.amount}</p>
+                }
+             
                 </IndexTable.Cell>
                 <IndexTable.Cell>
                 {
@@ -158,9 +185,12 @@ const OrderItem = (props:OrderItemProps) => {
                 }
                 </IndexTable.Cell>
                 <IndexTable.Cell >
-                {
-                    order.lineItems.edges.length + itemsCountCol(order)
-                }
+                { 
+                    order.cancelledAt ? 
+                        <del> { order.lineItems.edges.length + itemsCountCol(order)}</del>
+                        :    
+                        order.lineItems.edges.length + itemsCountCol(order)
+                }                
                 </IndexTable.Cell>
          
       </IndexTable.Row>
