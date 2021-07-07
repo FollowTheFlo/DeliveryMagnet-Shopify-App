@@ -35,6 +35,7 @@ import { SuccessResponse } from '../../model/responses.model';
 import { SelectionType } from '@shopify/polaris/dist/types/latest/src/utilities/index-provider';
 import { StatusAction } from '../../model/input.model';
 import { convertGraphQlToWebHookOrder } from '../utils/convertion';
+import { ShopifyConfig } from '../../model/config.model';
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -63,13 +64,19 @@ console.log('flo OrderList');
 
    useEffect(() => {
 
-      if(adminCtx.domain) {
-        console.log('domain already set');
-        return;
-      }     
+      // if(adminCtx.domain) {
+      //   console.log('domain already set');
+      //   return;
+      // }     
+    // get default service time form RM
 
       console.log('flo useEffect');
-            
+      if(adminCtx.jobOrders.length > 0){
+        console.log('dont refresh');
+        return;
+      }
+     
+
       client.query({ query: GET_DOMAIN }).then(domain => {
         console.log('domain', domain.data.shop.primaryDomain.url);
         if(domain.data.shop.primaryDomain.url){
@@ -119,6 +126,7 @@ console.log('flo OrderList');
       return {status:"UNKNOWN", action:""};
   }        
   
+ 
 
 
         const queryShopifyOrders = ():Promise<ShopifyGraphQLOrder[]> => {
@@ -161,14 +169,18 @@ console.log('flo OrderList');
             shop:"shop",
             orderIdsList:orderIDsList
         };       
-
-        return fetchApi({
-          method:'post',
-          body:JSON.stringify(obj),
-          url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
-        })
-          .then((jobs:RmJobWithStep[]) => {
-            console.log('RmOrders:',JSON.stringify(jobs));
+        return axios.post(`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
+          JSON.stringify(obj))
+        .then(response => {
+          const jobs = response?.data as RmJobWithStep[];
+          console.log('RmOrders:',JSON.stringify(jobs));
+        // return fetchApi({
+        //   method:'post',
+        //   body:JSON.stringify(obj),
+        //   url:`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
+        // })
+        //   .then((jobs:RmJobWithStep[]) => {
+        //     console.log('RmOrders:',JSON.stringify(jobs));
            // add associated RM job data to each shopify order, we have now all data we need: status on RM, track link...
            // list order item index order is ensure to be same as RM job index order, thus we map by index
             const fullJobOrderList:JobOrder[] = ordersList.map((order,i) => ({
