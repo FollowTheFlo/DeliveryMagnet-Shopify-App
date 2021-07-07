@@ -31,7 +31,7 @@ const GET_PRODUCTS_BY_ID = gql`
 
 const GET_ORDERS = gql`
   query{
-    orders(first: 25, reverse: true) {
+    orders(first: 20, reverse: true) {
     edges {
         node {
         id
