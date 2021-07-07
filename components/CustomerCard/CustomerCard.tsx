@@ -15,10 +15,9 @@ const CustomerCard  = (props:JobOrderProps) => {
                         {order?.customer?.phone && <TextStyle variation="subdued"> phone:{order.customer.phone}</TextStyle>}
                         </Stack.Item>
                     </Stack>
-                    <Stack distribution="center"                >
+                    <Stack distribution="center">
                         <Stack.Item fill={true}>
-                        {order?.customer?.email && <TextStyle variation="subdued"> email:{order.customer.email}</TextStyle>}
-                        {order?.customer?.phone && <TextStyle variation="subdued"> phone:{order.customer.phone}</TextStyle>}
+                        <TextStyle variation="subdued"> More stuff</TextStyle>
                         </Stack.Item>
                     </Stack>
                 </Card.Section>
