@@ -71,8 +71,8 @@ const OrderDetails:React.FC = (props) => {
         const job = response as RmJob;
         adminCtx.onJobOrderPush({...job});
 
-         const o = adminCtx.jobOrders.find(o => o.id === orderId);
-        console.log('just pushed', o);
+        //  const o = adminCtx.jobOrders.find(o => o.id === orderId);
+        // console.log('just pushed', o);
          setOrder({
            ...jOrder,
           statusAction:{status:'IN_WAITING_QUEUE',action:''},
@@ -94,11 +94,13 @@ const OrderDetails:React.FC = (props) => {
       console.log('response webhooks api', result);
       console.log('response fulfillment api', response);
       if(result.success) {
-       // onRefresh();
+       // 
        o.displayFulfillmentStatus = "FULFILLED";
        o.statusAction = {status:"READY_FOR_DELIVERY", action:"PUSH_TO_ROUTEMAGNET"};
+       o.lineItems.edges.forEach(item => item.node.fulfillmentStatus = 'fulfilled')
       adminCtx.onOneJobOrderChange({...o});     
       setOrder({...o});
+     // refresh();
        
       }
                 
@@ -108,13 +110,22 @@ const OrderDetails:React.FC = (props) => {
     })
   }
 
+  const refresh = () => {
+    const o = adminCtx.jobOrders.find(o => o.id === orderId);
+    setOrder(o);
+  }
+
   
 
   return order ? 
   <Page
   breadcrumbs={[{content: `order ${order.name}`, onAction: () => router.push("/") }]}
   title={`Order ${order.name}`}
-  subtitle= {"Created at" + order?.createdAt + " - " + wordsMapping[order.statusAction.status]}
+  subtitle= {
+    order.cancelledAt ?
+    "Created at " + order?.createdAt + " - Canceled at " + order.cancelledAt
+    :
+    "Created at " + order?.createdAt + " - " + wordsMapping[order.statusAction.status]}
 
 >
   <Layout>
