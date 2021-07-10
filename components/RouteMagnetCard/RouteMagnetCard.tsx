@@ -136,6 +136,7 @@ const inPlannerBuilderDetails = (j:JobOrder,isCurrentStatus:boolean) => {
          <TextStyle variation="subdued">{new Date(j?.job?.step?.routeStartedAt).toLocaleString() } </TextStyle>
      <div><TextStyle variation="strong"> Driver: {j?.job?.step?.driverLabel ?? 'user'} </TextStyle></div>
      <div> <a href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/delivery/${j.job.uId}`} target="_blank">Tracking link sent to customer</a></div>
+     <div> <a href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/live`} target="_blank">Supervisor Interactive Map</a></div>
     </React.Fragment>    
     )
   }
@@ -146,6 +147,7 @@ const inPlannerBuilderDetails = (j:JobOrder,isCurrentStatus:boolean) => {
     return (<React.Fragment>
          <TextStyle variation="subdued">{new Date(j?.job?.step?.startedAt).toLocaleString() } </TextStyle>
      <div><TextStyle variation="strong"> Driver: {j?.job?.step?.driverLabel ?? 'user'} </TextStyle></div>
+     <div> <a href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/live`} target="_blank" >Supervisor Interactive map</a></div>
     </React.Fragment>)
   }
   return <p>Driver Not on the way</p>

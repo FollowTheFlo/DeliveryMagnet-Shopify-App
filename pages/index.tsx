@@ -1,23 +1,15 @@
 
 import React, { useContext } from 'react';
 import { useRouter } from 'next/router';
-import { EmptyState, Layout, Page } from '@shopify/polaris';
+import Image from 'next/image';
+import { EmptyState, Layout, Page, Spinner } from '@shopify/polaris';
 import { ResourcePicker, TitleBar } from '@shopify/app-bridge-react';
 import store from 'store-js';
 import { useState, useEffect, useCallback } from 'react';
 import OrderList from '../components/OrderList/OrderList';
 import Settings from '../components/Settings/Settings'
 import { Card,
-  ResourceList,
-  Stack,
-  TextStyle,
-  Thumbnail,
-  ButtonGroup,
-  Button,
   Tabs,
-  TextField,
-  Heading,
-  Badge,
 } from '@shopify/polaris';
 import Inscription from '../components/Inscription/Inscription';
 import { getAccessTokenFromDB } from '../shared';
@@ -34,6 +26,7 @@ const Index:React.FC = (props) => {
   const emptyState = !store.get('ids');
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [loading, setloading] = useState<boolean>(true);
+  
   const tabs = [
     {
       id: 'orders',
@@ -97,7 +90,11 @@ const Index:React.FC = (props) => {
         
        {
        loading ?
-       <p>Loading</p> 
+       <React.Fragment>
+         <Spinner></Spinner>
+        {/* <p>Loading</p>
+        <Image src='/me.png' alt="me" width={100} height={100} /> */}
+       </React.Fragment>
        :
         adminCtx.isIntegrated ? 
         <div>

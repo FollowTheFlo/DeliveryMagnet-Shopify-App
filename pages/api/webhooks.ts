@@ -24,7 +24,13 @@ const getListActiveWebHooks = async (headers:any, shop:string):Promise<WebHook[]
     const webHooks = list.webhooks as WebHook[];
   // .get('https://' + shop + '/admin/api/2020-04/webhooks.json', {headers})
     console.log('getListActiveWebHooks',list);
-    if(webHooks?.length > 0 ) return webHooks;
+    if(webHooks?.length > 0 ) {
+      console.log('rmWebHooks1',webHooks);
+      // filter webhooks that belong to us
+      const rmWebHooks = webHooks.filter(w => w.address.includes(process.env.WEBHOOK_TARGET_URL))
+      console.log('rmWebHooks2',rmWebHooks);
+      return rmWebHooks;
+    };
     return [];
   } catch(err) {
     console.log('getActiveList err',err);
@@ -161,12 +167,12 @@ async function handler(req, res) {
 
     } else if(option === 'auto_create') {
       // register Order Creation WebHook
-      const createResponse = await createWebHook(headers,'orders/create', shop, `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add/`);
+      const createResponse = await createWebHook(headers,'orders/create', shop, `${process.env.WEBHOOK_TARGET_URL}/shopify/order/add/`);
       console.log('successCreation', createResponse);
   
     } else if(option === 'auto_fullfill') {
       // register Order Fullfill WebHook
-      const fulfillResponse = await createWebHook(headers,'orders/fulfilled', shop, `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add/`);
+      const fulfillResponse = await createWebHook(headers,'orders/fulfilled', shop, `${process.env.WEBHOOK_TARGET_URL}/shopify/order/add/`);
       console.log('successCreation', fulfillResponse);
     }
 

@@ -16,6 +16,8 @@ export interface AdminContextType{
     onIntegrationChange: (value:boolean) => void;
     defaultServiceDuration:number;
     onDefaultServiceDurationChange: (value:number) => void;
-    pageInfo:PageInfo,
-    onPageInfoChange: (value:PageInfo) => void,
+    pageInfo:PageInfo;
+    onPageInfoChange: (value:PageInfo) => void;
+    refreshDate:string;
+    onRefreshDateChange: (value:string) => void;
 }

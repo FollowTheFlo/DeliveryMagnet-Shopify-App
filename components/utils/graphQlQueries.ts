@@ -31,7 +31,7 @@ const GET_PRODUCTS_BY_ID = gql`
 
 const GET_ORDERS = gql`
   query{
-    orders(first: 20, reverse: true) {
+    orders(first: 10, reverse: true) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -131,7 +131,7 @@ const GET_ORDERS = gql`
 
 const GET_ORDERS_AFTER = (cursorVal:string) => gql`
   query{
-    orders(first: 20, reverse: true, after:"${cursorVal}") {
+    orders(first: 10, reverse: true, after:"${cursorVal}") {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -231,7 +231,7 @@ const GET_ORDERS_AFTER = (cursorVal:string) => gql`
 
 const GET_ORDERS_PREVIOUS = (cursorVal:string) => gql`
   query{
-    orders(last: 20, reverse: true, before:"${cursorVal}") {
+    orders(last: 10, reverse: true, before:"${cursorVal}") {
       pageInfo {
         hasNextPage
         hasPreviousPage

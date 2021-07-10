@@ -99,11 +99,10 @@ const updateOrderFullfillment = async (fulfillmentApiInput:ShopifyOrderFullFillm
     if(!response.fulfillment)return false;
 
     return true;
-} catch(err) {
-  console.log('fulfillment err',err);
-  return false; 
-}
-
+  } catch(err) {
+     console.log('fulfillment err',err);
+    return false; 
+  }
 }
 
 const postOrderFullfillment = async (headers,shop,orderId,uId?) => {

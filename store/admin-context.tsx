@@ -24,6 +24,8 @@ const AdminContext = React.createContext({
   onDefaultServiceDurationChange: (value) => {},
   pageInfo: null,
   onPageInfoChange: (value) => {},
+  refreshDate:'',
+  onRefreshDateChange: (value) => {},
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
@@ -40,6 +42,7 @@ export const AdminContextProvider = (props) => {
   const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
   const [defaultServiceDuration, setDefaultServiceDuration] = useState(0);
   const [pageInfo, setPageInfo] = useState({hasPreviousPage:false,hasNextPage:false});
+  const [refreshDate, setRefreshDate] = useState<string>('');
   useEffect(() => {
     // get mode from server
     console.log('admin context');
@@ -115,6 +118,11 @@ export const AdminContextProvider = (props) => {
     setPageInfo(val);
   }
 
+  const onRefreshDateChangeHandler = (val:string) => {
+    console.log('onRefreshDateChangeHandler:', val);
+    setRefreshDate(val);
+  }
+
   return (
     <AdminContext.Provider
       value={{
@@ -132,6 +140,8 @@ export const AdminContextProvider = (props) => {
         onDefaultServiceDurationChange: onDefaultServiceDurationChangeHandler,
         pageInfo: pageInfo,
         onPageInfoChange: onPageInfoChangeHandler,
+        refreshDate: refreshDate,
+        onRefreshDateChange: onRefreshDateChangeHandler,
       }}
     >
       {props.children}
