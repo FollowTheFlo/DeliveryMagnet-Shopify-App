@@ -1,116 +1,110 @@
-import React from 'react';
-import App from 'next/app';
-import Head from 'next/head';
-import { AppProvider } from '@shopify/polaris';
+import React from "react";
+import App from "next/app";
+import Head from "next/head";
+import { AppProvider } from "@shopify/polaris";
 import { Provider, Context, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
-import { Redirect } from '@shopify/app-bridge/actions';
-import '@shopify/polaris/dist/styles.css';
-import translations from '@shopify/polaris/locales/en.json';
-import ClientRouter from '../components/ClientRouter';
-import ApolloClient from 'apollo-boost';
-import { ApolloProvider } from 'react-apollo';
-import { AdminContextProvider } from '../store/admin-context';
-const axios = require('axios');
-
+import { Redirect } from "@shopify/app-bridge/actions";
+import "@shopify/polaris/dist/styles.css";
+import translations from "@shopify/polaris/locales/en.json";
+import ClientRouter from "../components/ClientRouter";
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
+import { AdminContextProvider } from "../store/admin-context";
+const axios = require("axios");
 
 function userLoggedInFetch(app) {
-    const fetchFunction = authenticatedFetch(app);
-  
-    return async (uri, options) => {
-      const response = await fetchFunction(uri, options);
-  
-      if (response.headers.get('X-Shopify-API-Request-Failure-Reauthorize') === '1') {
-        const authUrlHeader = response.headers.get('X-Shopify-API-Request-Failure-Reauthorize-Url');
-  
-        const redirect = Redirect.create(app);
-        redirect.dispatch(Redirect.Action.APP, authUrlHeader || `/auth`);
-        return null;
-      }
-  
-      return response;
-    };
-  }
+  const fetchFunction = authenticatedFetch(app);
 
-  function AxiosInterceptor(pageProps) {
-    console.log('interceptor1');
-      const app = useAppBridge();
-      console.log('interceptor2');
+  return async (uri, options) => {
+    const response = await fetchFunction(uri, options);
 
-    axios.interceptors.request.use(function (config) {
-      
- return getSessionToken(app) // requires an App Bridge instance
-     .then((token) => {
-      console.log('interceptor3', token);
-    //  append your request headers with an authenticated token
-     config.headers["Authorization"] = `Bearer ${token}`;
-     config.headers['Content-Type'] = 'application/json';
-     config.headers['Accept'] = 'application/json';
-     return config;
-     });
-     //  return config;
-    });
-     return (
-        <React.Fragment>
-        {pageProps.children}
-      </React.Fragment>
+    if (
+      response.headers.get("X-Shopify-API-Request-Failure-Reauthorize") === "1"
+    ) {
+      const authUrlHeader = response.headers.get(
+        "X-Shopify-API-Request-Failure-Reauthorize-Url"
       );
-  }
 
+      const redirect = Redirect.create(app);
+      redirect.dispatch(Redirect.Action.APP, authUrlHeader || `/auth`);
+      return null;
+    }
 
-  
-function MyProvider(pageProps) {
-   // static contextType = Context;
-   console.log('MyProvider1');
-   const app = useAppBridge();
-   console.log('MyProvider2');
-      const client = new ApolloClient({
-        fetch: userLoggedInFetch(app),
-        fetchOptions: {         
-          credentials: "include",
-        }
+    return response;
+  };
+}
+
+function AxiosInterceptor(pageProps) {
+  console.log("interceptor1");
+  const app = useAppBridge();
+  console.log("interceptor2");
+
+  axios.interceptors.request.use(function (config) {
+    return getSessionToken(app) // requires an App Bridge instance
+      .then((token) => {
+        console.log("interceptor3", token);
+        //  append your request headers with an authenticated token
+        config.headers["Authorization"] = `Bearer ${token}`;
+        config.headers["Content-Type"] = "application/json";
+        config.headers["Accept"] = "application/json";
+        return config;
       });
-  
-      return (
-        <ApolloProvider client={client}>
-        {pageProps.children}
-      </ApolloProvider>
-      );    
-  }
+    //  return config;
+  });
+  return <React.Fragment>{pageProps.children}</React.Fragment>;
+}
 
-function MyApp(props){
- 
-    const { Component, pageProps, shopOrigin } = props;
+function MyProvider(pageProps) {
+  // static contextType = Context;
+  console.log("MyProvider1");
+  const app = useAppBridge();
+  console.log("MyProvider2");
+  const client = new ApolloClient({
+    fetch: userLoggedInFetch(app),
+    fetchOptions: {
+      credentials: "include",
+    },
+  });
 
-console.log('API_KEY',process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);  
-    const config = { apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY, shopOrigin, forceRedirect: true };
-    return (
-      <React.Fragment>
-        <Head>
-          <title>RouteMagnet Local Delivery</title>
-          <meta charSet="utf-8" />
-        </Head>
-        <Provider config={config}>
-          <ClientRouter />
-          <AppProvider i18n={translations}>          
-            <MyProvider>
-              <AxiosInterceptor>
-                <AdminContextProvider>
-                  <Component {...pageProps} />
-                </AdminContextProvider>
-              </AxiosInterceptor>
-            </MyProvider>           
-          </AppProvider>
-        </Provider>
-      </React.Fragment>
-    );
-  
+  return <ApolloProvider client={client}>{pageProps.children}</ApolloProvider>;
+}
+
+function MyApp(props) {
+  const { Component, pageProps, shopOrigin } = props;
+
+  console.log("API_KEY", process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);
+  const config = {
+    apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY,
+    shopOrigin,
+    forceRedirect: true,
+  };
+  return (
+    <React.Fragment>
+      <Head>
+        <title>RouteMagnet Local Delivery</title>
+        <meta charSet="utf-8" />
+      </Head>
+      <Provider config={config}>
+        <ClientRouter />
+        <AppProvider i18n={translations}>
+          <MyProvider>
+            <AxiosInterceptor>
+              <AdminContextProvider>
+                <Component {...pageProps} />
+              </AdminContextProvider>
+            </AxiosInterceptor>
+          </MyProvider>
+        </AppProvider>
+      </Provider>
+    </React.Fragment>
+  );
 }
 
 MyApp.getInitialProps = async ({ ctx }) => {
   return {
     shopOrigin: ctx.query.shop,
-  }
-}
+  };
+};
 
 export default MyApp;

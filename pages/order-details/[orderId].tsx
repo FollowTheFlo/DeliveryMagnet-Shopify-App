@@ -123,6 +123,7 @@ const OrderDetails: React.FC = (props) => {
 
   return order ? (
     <Page
+      fullWidth
       breadcrumbs={[
         { content: `order ${order.name}`, onAction: () => router.push("/") },
       ]}
