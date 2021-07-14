@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import gql from "graphql-tag";
 
 const GET_PRODUCTS_BY_ID = gql`
   query getProducts($ids: [ID!]!) {
@@ -9,7 +9,7 @@ const GET_PRODUCTS_BY_ID = gql`
         descriptionHtml
         id
         images(first: 1) {
-          edges { 
+          edges {
             node {
               originalSrc
               altText
@@ -29,9 +29,123 @@ const GET_PRODUCTS_BY_ID = gql`
   }
 `;
 
-const GET_ORDERS = gql`
+const GET_ORDERS = (itemPerpage: number, filterQuery: string) => gql`
+
+  query {
+    orders(first: ${itemPerpage}, reverse: true, query: "${filterQuery}") {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+          displayFulfillmentStatus
+          displayFinancialStatus
+          test
+          createdAt
+          cancelReason
+          cancelledAt
+          email
+          phone
+          confirmed
+          fullyPaid
+          note
+          requiresShipping
+          fulfillmentOrders(first: 2) {
+            edges {
+              node {
+                deliveryMethod {
+                  id
+                  methodType
+                }
+              }
+            }
+          }
+          customer {
+            email
+            phone
+          }
+          totalPriceSet {
+            shopMoney {
+              amount
+              currencyCode
+            }
+          }
+          shippingAddress {
+            address1
+            address2
+            city
+            provinceCode
+            zip
+            country
+            latitude
+            longitude
+            firstName
+            lastName
+          }
+          shippingLines(first: 2) {
+            edges {
+              node {
+                phone
+                carrierIdentifier
+                id
+                discountedPriceSet {
+                  shopMoney {
+                    amount
+                  }
+                }
+                originalPriceSet {
+                  shopMoney {
+                    amount
+                  }
+                }
+                deliveryCategory
+                source
+                code
+                title
+              }
+            }
+          }
+          lineItems(first: 5) {
+            edges {
+              node {
+                id
+                title
+                fulfillmentStatus
+                image {
+                  id
+                  originalSrc
+                }
+                quantity
+                originalUnitPriceSet {
+                  shopMoney {
+                    amount
+                  }
+                }
+                name
+                sku
+                product {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const GET_ORDERS_AFTER = (
+  itemPerpage: number,
+  cursorVal: string,
+  filterQuery: string
+) => gql`
   query{
-    orders(first: 10, reverse: true) {
+    orders(first: ${itemPerpage}, reverse: true, query: "${filterQuery}",after:"${cursorVal}") {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -53,6 +167,16 @@ const GET_ORDERS = gql`
         fullyPaid
         note
         requiresShipping
+        fulfillmentOrders(first: 2) {
+            edges {
+              node {
+                deliveryMethod {
+                  id
+                  methodType
+                }
+              }
+            }
+          }
         customer{
           email
           phone
@@ -75,7 +199,7 @@ const GET_ORDERS = gql`
           firstName
           lastName
         }        
-        shippingLines(first: 5)
+        shippingLines(first: 2)
         {
            edges {
               node{
@@ -129,9 +253,13 @@ const GET_ORDERS = gql`
 }
 `;
 
-const GET_ORDERS_AFTER = (cursorVal:string) => gql`
+const GET_ORDERS_PREVIOUS = (
+  itemPerpage: number,
+  cursorVal: string,
+  filterQuery: string
+) => gql`
   query{
-    orders(first: 10, reverse: true, after:"${cursorVal}") {
+    orders(last: ${itemPerpage}, reverse: true,query: "${filterQuery}",before:"${cursorVal}") {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -153,106 +281,16 @@ const GET_ORDERS_AFTER = (cursorVal:string) => gql`
         fullyPaid
         note
         requiresShipping
-        customer{
-          email
-          phone
-        }
-        totalPriceSet{
-          shopMoney {
-              amount
-              currencyCode
-            }
-          }    
-        shippingAddress {
-          address1
-          address2
-          city
-          provinceCode
-          zip          
-          country
-          latitude
-          longitude
-          firstName
-          lastName
-        }        
-        shippingLines(first: 5)
-        {
-           edges {
-              node{
-                phone
-                carrierIdentifier
-                 id
-                discountedPriceSet {
-                    shopMoney {
-                    amount
-                    }
+        fulfillmentOrders(first: 2) {
+            edges {
+              node {
+                deliveryMethod {
+                  id
+                  methodType
                 }
-                originalPriceSet {
-                    shopMoney {
-                    amount
-                    }
-                }             
-                deliveryCategory
-                source
-                code
-                title             
-        	  }
-          }
-        }
-        lineItems(first: 5) {
-          edges {
-            node {              
-              id
-              title
-              fulfillmentStatus             
-              image {
-                id
-                originalSrc
               }
-              quantity
-              originalUnitPriceSet {
-                  shopMoney {
-                      amount
-                  }
-              }
-              name
-              sku
-              product {
-                id
-              }       
             }
           }
-        }
-      }
-    }
-  }
-}
-`;
-
-const GET_ORDERS_PREVIOUS = (cursorVal:string) => gql`
-  query{
-    orders(last: 10, reverse: true, before:"${cursorVal}") {
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-      }
-     edges {
-        cursor
-        node {
-        id
-        name
-        displayFulfillmentStatus
-        displayFinancialStatus
-        test
-        createdAt
-        cancelReason
-        cancelledAt
-        email
-        phone    
-        confirmed
-        fullyPaid
-        note
-        requiresShipping
         customer{
           email
           phone
@@ -275,7 +313,7 @@ const GET_ORDERS_PREVIOUS = (cursorVal:string) => gql`
           firstName
           lastName
         }        
-        shippingLines(first: 5)
+        shippingLines(first: 2)
         {
            edges {
               node{
@@ -330,15 +368,19 @@ const GET_ORDERS_PREVIOUS = (cursorVal:string) => gql`
 `;
 
 const GET_DOMAIN = gql`
-  query{
-    
-  shop {
-    primaryDomain {
-      url
+  query {
+    shop {
+      primaryDomain {
+        url
+      }
     }
-  
-}
+  }
+`;
 
-  }`
-
-export { GET_DOMAIN, GET_ORDERS, GET_ORDERS_AFTER, GET_ORDERS_PREVIOUS, GET_PRODUCTS_BY_ID}
+export {
+  GET_DOMAIN,
+  GET_ORDERS,
+  GET_ORDERS_AFTER,
+  GET_ORDERS_PREVIOUS,
+  GET_PRODUCTS_BY_ID,
+};
