@@ -38,6 +38,8 @@ import { convertGraphQlToWebHookOrder } from "../utils/convertion";
 import OrdersFilter from "./OrdersFilter/OrdersFilter";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import useSuccessToast from "../../hooks/SuccessToast/SuccessToast";
+import { en } from "../utils/localMapping";
+import SkeletonLoader from "../Skeleton/SkeletonLoader";
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -77,9 +79,9 @@ const OrderList: React.FC = (props) => {
     client
       .query({ query: GET_DOMAIN })
       .then((domain) => {
-        console.log("domain", domain.data.shop.primaryDomain.url);
-        if (domain.data.shop.primaryDomain.url) {
-          adminCtx.onDomainChange(domain.data.shop.primaryDomain.url);
+        console.log("domain", domain.data.shop.myshopifyDomain);
+        if (domain?.data?.shop?.myshopifyDomain) {
+          adminCtx.onDomainChange(domain.data.shop.myshopifyDomain);
           // once we have domain, run JobOrders that will fetch shopify orders then associated jobs from RM
           fetchJobOrders([...adminCtx.selectedDeliveryType]);
         }
@@ -226,11 +228,14 @@ const OrderList: React.FC = (props) => {
         }) as ShopifyGraphQLOrder[];
 
         // format date with friendly form, eg: 17/06/2021, 15:07
-        // note that this operation in map iterartor above give us 'Unknow Date', below is the workaround
+        // note that this operation in map iterator above give us 'Unknow Date', below is the workaround
         ordersList.forEach((o) => {
           o.createdAt = new Date(o.createdAt)
             .toLocaleString("en-GB")
             .replace(/(:\d{2}| [AP]M)$/, "");
+          o.customer.id = o?.customer?.id
+            ? o.customer.id.replace("gid://shopify/Customer/", "")
+            : "";
         });
         return ordersList;
       })
@@ -301,21 +306,25 @@ const OrderList: React.FC = (props) => {
     // convert order in WebHook order format, RM is expecting this format. handy as WebHook also send order in this this format.
     const whOrder = convertGraphQlToWebHookOrder(jOrder, adminCtx.domain);
 
-    fetchApi({
-      method: "post",
-      body: JSON.stringify(whOrder),
-      url: `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
-    }).then((response) => {
-      // if error, returned Object has property error. check its presence
-      if (response.error) {
-        console.log(response.error);
-        setErrorToastText(response.error);
-        return;
-      }
-      const job = response as RmJob;
-      console.log("push job", job);
-      adminCtx.onJobOrderPush({ ...job });
-    });
+    axios
+      .post(
+        `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add_from_app`,
+        JSON.stringify(whOrder)
+      )
+      .then((response) => {
+        // if error, returned Object has property error. check its presence
+        if (response.error || !response.data) {
+          console.log(response.error);
+          setErrorToastText(response.error);
+          return;
+        }
+        const job = response.data as RmJob;
+        console.log("push job", job);
+        adminCtx.onJobOrderPush({ ...job });
+      })
+      .catch((err) => {
+        setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
+      });
   };
 
   const onFulfillOneOrder = (o: JobOrder) => {
@@ -338,20 +347,6 @@ const OrderList: React.FC = (props) => {
       .catch((err) => {
         console.log("err fulfillment", err);
       });
-  };
-
-  const openOrderDetails = (orderId: string, p: boolean) => {
-    console.log("openOrderDetails", orderId);
-    // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
-    // this flag allows us to handle those 2 scenario: row selection click and Action button click
-    if (preventRowSelection) {
-      console.log("in preventRowSelection condition");
-      preventRowSelection = false;
-      return;
-    }
-    if (!orderId) return;
-    // open order details page
-    router.push(`/order-details/${orderId}`);
   };
 
   const onSelectionChangeHandler = (
@@ -401,7 +396,7 @@ const OrderList: React.FC = (props) => {
           onPushOrder={onPushToRM}
           onFulfillOrder={onFulfillOneOrder}
           isManualMode={adminCtx.mode.manual}
-          domain={adminCtx.domain}
+          domain={adminCtx.domain} //domain without https:// prefix
           selectedResources={selectedResources.selection}
         />
       );
@@ -508,34 +503,35 @@ const OrderList: React.FC = (props) => {
         </Stack.Item>
       </Stack>
       <br />
+      {!loadingMessage || adminCtx?.jobOrders?.length > 0 ? (
+        <Card>
+          <Card.Section>
+            <Stack alignment="center" distribution="center">
+              <Stack.Item>
+                <OrdersFilter
+                  selectedDeliveryType={adminCtx.selectedDeliveryType}
+                  handleDeliveryTypeChange={handleDeliveryTypeChange}
+                />
+              </Stack.Item>
+            </Stack>
 
-      <Card>
-        <Card.Section>
-          <Stack alignment="center" distribution="center">
-            <Stack.Item>
-              <OrdersFilter
-                selectedDeliveryType={adminCtx.selectedDeliveryType}
-                handleDeliveryTypeChange={handleDeliveryTypeChange}
-              />
-            </Stack.Item>
-          </Stack>
+            {adminCtx?.jobOrders?.length > 0 && IndexTableBlock()}
 
-          {adminCtx.jobOrders &&
-            adminCtx.jobOrders.length > 0 &&
-            IndexTableBlock()}
-
-          <Pagination
-            hasPrevious={adminCtx.pageInfo.hasPreviousPage}
-            onPrevious={onPaginationPrevious}
-            hasNext={
-              adminCtx.pageInfo.hasNextPage &&
-              adminCtx.jobOrders.length ===
-                +process.env.NEXT_PUBLIC_PAGINATION_NUM
-            }
-            onNext={onPaginationNext}
-          />
-        </Card.Section>
-      </Card>
+            <Pagination
+              hasPrevious={adminCtx.pageInfo.hasPreviousPage}
+              onPrevious={onPaginationPrevious}
+              hasNext={
+                adminCtx.pageInfo.hasNextPage &&
+                adminCtx.jobOrders.length ===
+                  +process.env.NEXT_PUBLIC_PAGINATION_NUM
+              }
+              onNext={onPaginationNext}
+            />
+          </Card.Section>
+        </Card>
+      ) : (
+        <SkeletonLoader />
+      )}
       {displayErrorToast}
     </React.Fragment>
   );
