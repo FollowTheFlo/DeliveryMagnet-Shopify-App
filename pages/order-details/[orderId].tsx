@@ -21,6 +21,7 @@ import {
   TextField,
   Heading,
   Badge,
+  Spinner,
 } from "@shopify/polaris";
 
 import AdminContext from "../../store/admin-context";
@@ -36,6 +37,7 @@ import { convertGraphQlToWebHookOrder } from "../../components/utils/convertion"
 import { SuccessResponse } from "../../model/responses.model";
 import axios from "axios";
 import CustomerCard from "../../components/CustomerCard/CustomerCard";
+import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
@@ -49,6 +51,7 @@ const OrderDetails: React.FC = (props) => {
   const orderId = router.query.orderId;
   const adminCtx = useContext(AdminContext);
   const [order, setOrder] = useState<JobOrder>(null);
+  const { displayErrorToast, setErrorToastText } = useErrorToast(5000);
 
   useEffect(() => {
     const o = adminCtx.jobOrders.find((o) => o.id === orderId);
@@ -63,24 +66,29 @@ const OrderDetails: React.FC = (props) => {
       method: "post",
       body: JSON.stringify(whOrder),
       url: `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
-    }).then((response) => {
-      console.log("response job", response);
-      // if error, object returned has property error
-      if (response.error) {
-        console.log(response.error);
-        return;
-      }
-      const job = response as RmJob;
-      adminCtx.onJobOrderPush({ ...job });
+    })
+      .then((response) => {
+        console.log("response job", response);
+        // if error, object returned has property error
+        if (response.error) {
+          console.log(response.error);
+          setErrorToastText(response.error);
+          return;
+        }
+        const job = response as RmJob;
+        adminCtx.onJobOrderPush({ ...job });
 
-      //  const o = adminCtx.jobOrders.find(o => o.id === orderId);
-      // console.log('just pushed', o);
-      setOrder({
-        ...jOrder,
-        statusAction: { status: "IN_WAITING_QUEUE", action: "" },
-        job: { ...job, step: null },
+        //  const o = adminCtx.jobOrders.find(o => o.id === orderId);
+        // console.log('just pushed', o);
+        setOrder({
+          ...jOrder,
+          statusAction: { status: "IN_WAITING_QUEUE", action: "" },
+          job: { ...job, step: null },
+        });
+      })
+      .catch((err) => {
+        setErrorToastText("" + (err ?? "Server Error"));
       });
-    });
   };
 
   const onFulfillOneOrder = (o: JobOrder) => {
@@ -163,9 +171,12 @@ const OrderDetails: React.FC = (props) => {
           />
         </Layout.Section>
       </Layout>
+      {displayErrorToast}
     </Page>
   ) : (
-    <p>Loading Order</p>
+    <div style={{ textAlign: "center" }}>
+      <Spinner accessibilityLabel="Loading Order" />
+    </div>
   );
 };
 

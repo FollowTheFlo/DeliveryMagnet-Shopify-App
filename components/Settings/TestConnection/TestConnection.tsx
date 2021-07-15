@@ -10,14 +10,20 @@ import {
 import React, { useState } from "react";
 import { Company } from "../../../model/company.model";
 import { RmJob } from "../../../model/jobs.model";
+import useErrorToast from "../../../hooks/ErrorToast/ErrorToast";
+import ErrorToast from "../../../hooks/ErrorToast/ErrorToast";
+import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
+import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
 const axios = require("axios");
 
 const TestConnection = (props) => {
   const [company, setCompany] = useState<Company>(null);
-  const [successTest, setSuccessTest] = useState(false);
-  const [errorTest, setErrorTest] = useState(false);
+  const [successToast, setSuccessToast] = useState("");
+  const [errorToast, setErrorToast] = useState("");
   const [loading, setLoading] = useState(false);
+  const { displayErrorToast, setErrorToastText } = useErrorToast();
+  const { displaySuccessToast, setSuccessToastText } = useSuccessToast();
 
   const fetchCompany = (): Promise<Company> => {
     return axios
@@ -39,8 +45,24 @@ const TestConnection = (props) => {
           console.log(response.error);
           return null;
         }
-        const job = response as RmJob;
+        const job = response.data as RmJob;
         return job;
+      });
+  };
+
+  const unactiveIntegration = (): Promise<boolean> => {
+    return axios
+      .post(
+        `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/unactive`,
+        JSON.stringify(TestOrder)
+      )
+      .then((response) => {
+        if (response.error) {
+          console.log(response.error);
+          return null;
+        }
+        const success = response.data as boolean;
+        return success;
       });
   };
 
@@ -51,9 +73,11 @@ const TestConnection = (props) => {
       const company = await fetchCompany();
       setLoading(false);
       setCompany(company);
+      setSuccessToast("Company found");
     } catch (err) {
       setLoading(false);
-      setErrorTest(true);
+      console.log("company err", JSON.stringify(err.response.data.message));
+      setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
     }
   };
   const onSendTestOrder = async () => {
@@ -63,37 +87,24 @@ const TestConnection = (props) => {
       const job = await pushTestOrder();
       console.log("push test job", job);
       setLoading(false);
-      setSuccessTest(true);
+      setSuccessToast("Order sent succefully");
     } catch (err) {
       setLoading(false);
-      setErrorTest(true);
+      setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
     }
   };
 
-  const successToast = successTest ? (
-    <div style={{ height: "50px" }}>
-      <Frame>
-        <Toast
-          content="Success, Test order is now in RouteMagnet waiting List"
-          onDismiss={() => setSuccessTest(!successTest)}
-          duration={10000}
-        />
-      </Frame>
-    </div>
-  ) : null;
-
-  const errorToast = errorTest ? (
-    <div style={{ height: "50px" }}>
-      <Frame>
-        <Toast
-          error
-          content="Error, connection failed"
-          onDismiss={() => setErrorTest(!errorTest)}
-          duration={10000}
-        />
-      </Frame>
-    </div>
-  ) : null;
+  const onUnactiveAccount = async () => {
+    console.log("onUnactiveAccount");
+    setLoading(true);
+    try {
+      const success = await unactiveIntegration();
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
+    }
+  };
 
   return (
     <Card>
@@ -105,6 +116,7 @@ const TestConnection = (props) => {
           <ButtonGroup>
             <Button onClick={onCheckCompanyInfo}>Check Company Info</Button>
             <Button onClick={onSendTestOrder}>Push Test order</Button>
+            <Button onClick={onUnactiveAccount}>Unactive account</Button>
           </ButtonGroup>
         </div>
         {company && (
@@ -132,8 +144,9 @@ const TestConnection = (props) => {
         )}
         <br />
       </Card.Section>
-      {successToast}
-      {errorToast}
+      {/* <ErrorToast errorToast={errorToast} setErrorToast={setErrorToast} /> */}
+      {displaySuccessToast}
+      {displayErrorToast}
     </Card>
   );
 };

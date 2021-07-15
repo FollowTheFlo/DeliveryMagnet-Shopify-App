@@ -55,7 +55,6 @@ const OrderItem = (props: OrderItemProps) => {
     onFulfillOrder,
     domain,
   } = props;
-  const [open, setOpen] = useState(false);
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -94,8 +93,6 @@ const OrderItem = (props: OrderItemProps) => {
     return <Badge status={status}>{wordsMapping[o.statusAction.status]}</Badge>;
   };
   const actionCol = (o: JobOrder) => {
-    // const statusAction = getStatusAction(o);
-    console.log("status flo", o.statusAction);
     // no action button if order is canceled
     if (o.cancelledAt) return "";
 
@@ -121,7 +118,7 @@ const OrderItem = (props: OrderItemProps) => {
 
   const itemsCountCol = (o: JobOrder) => {
     const count = o.lineItems.edges.length;
-    console.log("itemsCountCol", count);
+
     return count === 1 ? " item" : " items";
   };
 
@@ -161,6 +158,8 @@ const OrderItem = (props: OrderItemProps) => {
           </p>
         )}
       </IndexTable.Cell>
+      <IndexTable.Cell>{statusCol(order)}</IndexTable.Cell>
+      <IndexTable.Cell>{actionCol(order)}</IndexTable.Cell>
       <IndexTable.Cell>
         {order.cancelledAt ? (
           <del>
@@ -177,8 +176,6 @@ const OrderItem = (props: OrderItemProps) => {
       </IndexTable.Cell>
       <IndexTable.Cell>{deliveryMethodCol(order)}</IndexTable.Cell>
       <IndexTable.Cell>{paidCol(order)}</IndexTable.Cell>
-      <IndexTable.Cell>{statusCol(order)}</IndexTable.Cell>
-      <IndexTable.Cell>{actionCol(order)}</IndexTable.Cell>
       <IndexTable.Cell>
         {order.cancelledAt ? (
           <del> {order.lineItems.edges.length + itemsCountCol(order)}</del>

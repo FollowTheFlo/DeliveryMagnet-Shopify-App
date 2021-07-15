@@ -28,31 +28,39 @@ import fetchApi from "../utils/fetchApi";
 import { JobOrder, ShopifyGraphQLOrder } from "../../model/orders.model";
 import { RmJob, RmJobWithStep } from "../../model/jobs.model";
 import { SuccessResponse } from "../../model/responses.model";
-import { SelectionType } from "@shopify/polaris/dist/types/latest/src/utilities/index-provider";
 import {
   CursorSelection,
+  IndexListSelection,
   PageInfo,
   StatusAction,
 } from "../../model/input.model";
 import { convertGraphQlToWebHookOrder } from "../utils/convertion";
 import OrdersFilter from "./OrdersFilter/OrdersFilter";
+import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
+import useSuccessToast from "../../hooks/SuccessToast/SuccessToast";
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
 const OrderList: React.FC = (props) => {
   console.log("flo OrderList");
-  // const RM_SERVER_URL = 'https://83e781cb2720.ngrok.io';
-  // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
-  // const client = useApolloClient();
-  // const contextType = Context;
 
   const client = useApolloClient();
 
   // const [domain, setDomain] = useState('flo domain');
   const adminCtx = useContext(AdminContext);
   const router = useRouter();
+  // displayErrorToast is a jsx element, when setErrorToastText has non empty text, toast appears.
+  const { displayErrorToast, setErrorToastText } = useErrorToast(5000); //5sec toast display duration
+  // flag to avoid row selection when pressing Button within the row
   let preventRowSelection = false;
 
+  // IndexListSelection values are given when changing selection, we keep track on it as local state
+  const [selectedResources, setSelectedResources] =
+    useState<IndexListSelection>({
+      selectionType: "Single",
+      toggleType: false,
+      selection: [],
+    });
   // inform on loading stage: requesting data on shopify or RM
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   let pageInfo: PageInfo = null;
@@ -107,6 +115,7 @@ const OrderList: React.FC = (props) => {
         // when failure, fill empty orders list
         adminCtx.onJobOrdersChange([]);
         setLoadingMessage(errMessage);
+        setErrorToastText(errMessage);
       });
   };
 
@@ -284,10 +293,11 @@ const OrderList: React.FC = (props) => {
   };
 
   const onPushToRM = (jOrder: JobOrder) => {
+    preventRowSelection = true;
     console.log("onPushToRM", jOrder);
     console.log("setPreventSel", true);
     console.log("domain", adminCtx.domain);
-    preventRowSelection = true;
+
     // convert order in WebHook order format, RM is expecting this format. handy as WebHook also send order in this this format.
     const whOrder = convertGraphQlToWebHookOrder(jOrder, adminCtx.domain);
 
@@ -299,6 +309,7 @@ const OrderList: React.FC = (props) => {
       // if error, returned Object has property error. check its presence
       if (response.error) {
         console.log(response.error);
+        setErrorToastText(response.error);
         return;
       }
       const job = response as RmJob;
@@ -329,39 +340,54 @@ const OrderList: React.FC = (props) => {
       });
   };
 
-  // shopify hook use to select element of the list, gives list of selected row
-  const {
-    selectedResources,
-    allResourcesSelected,
-    // @ts-ignore
-  } = useIndexResourceState(adminCtx.jobOrders);
+  const openOrderDetails = (orderId: string, p: boolean) => {
+    console.log("openOrderDetails", orderId);
+    // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
+    // this flag allows us to handle those 2 scenario: row selection click and Action button click
+    if (preventRowSelection) {
+      console.log("in preventRowSelection condition");
+      preventRowSelection = false;
+      return;
+    }
+    if (!orderId) return;
+    // open order details page
+    router.push(`/order-details/${orderId}`);
+  };
 
-  const onSelectionChangeHandler = useCallback(
-    (
-      selectionType: SelectionType,
-      toggleType: boolean,
-      selectedOrderId: any
-    ) => {
-      console.log(
-        "onSelectionChange",
+  const onSelectionChangeHandler = (
+    selectionType: any,
+    toggleType: boolean,
+    selectedOrderId: any
+  ) => {
+    console.log(
+      "onSelectionChange",
+      selectionType,
+      toggleType,
+      selectedOrderId
+    );
+
+    setSelectedResources((prevValue) => {
+      return {
         selectionType,
         toggleType,
-        selectedOrderId
-      );
-      console.log("preventRowSelection", preventRowSelection);
-      // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
-      // this flag allows us to handle those 2 scenario: row selection click and Action button click
-      if (preventRowSelection) {
-        console.log("in preventRowSelection condition");
-        preventRowSelection = false;
-        return;
-      }
-      if (!selectedOrderId) return;
-      // open order details page
-      router.push(`/order-details/${selectedOrderId}`);
-    },
-    []
-  );
+        selection: selectedOrderId ?? prevValue.selection,
+      };
+    });
+
+    //  openOrderDetails(selectedOrderId, preventSel);
+
+    console.log("preventRowSelection", preventRowSelection);
+    // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
+    // this flag allows us to handle those 2 scenario: row selection click and Action button click
+    if (preventRowSelection) {
+      console.log("in preventRowSelection condition");
+      preventRowSelection = false;
+      return;
+    }
+    if (!selectedOrderId) return;
+    // open order details page
+    router.push(`/order-details/${selectedOrderId}`);
+  };
   // display jobOrder rows form list
   const jobOrderRows = (list: JobOrder[]) => {
     console.log("rowMarkup");
@@ -376,7 +402,7 @@ const OrderList: React.FC = (props) => {
           onFulfillOrder={onFulfillOneOrder}
           isManualMode={adminCtx.mode.manual}
           domain={adminCtx.domain}
-          selectedResources={selectedResources}
+          selectedResources={selectedResources.selection}
         />
       );
     });
@@ -386,23 +412,21 @@ const OrderList: React.FC = (props) => {
     console.log("IndexTableBlock");
     return (
       <IndexTable
+        selectable={true}
         resourceName={{ singular: "Order", plural: "Orders" }}
         itemCount={adminCtx.jobOrders.length}
-        selectedItemsCount={
-          allResourcesSelected ? "All" : selectedResources.length
-        }
-        selectable={false}
+        selectedItemsCount={0}
         loading={loadingMessage ? true : false}
         onSelectionChange={onSelectionChangeHandler}
         headings={[
           { title: "Name" },
           { title: "Created" },
           { title: "Customer" },
+          { title: "Status" },
+          { title: "Action" },
           { title: "Price" },
           { title: "Delivery Method" },
           { title: "Payment" },
-          { title: "Status" },
-          { title: "Action" },
           { title: "items" },
         ]}
       >
@@ -512,6 +536,7 @@ const OrderList: React.FC = (props) => {
           />
         </Card.Section>
       </Card>
+      {displayErrorToast}
     </React.Fragment>
   );
 };
