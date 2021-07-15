@@ -12,6 +12,7 @@ import Inscription from "../components/Inscription/Inscription";
 import axios from "axios";
 import { SuccessResponse } from "../model/responses.model";
 import AdminContext from "../store/admin-context";
+import NavCard from "../components/NavCard/NavCard";
 
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
@@ -89,49 +90,15 @@ const Index: React.FC = (props) => {
         </React.Fragment>
       );
     }
-    // return tabIndex === 0 ? (
-    //   <React.Fragment>
-    //     <OrderList />
-    //   </React.Fragment>
-    // ) : (
-    //   <React.Fragment>
-    //     <Settings />
-    //   </React.Fragment>
-    // );
   }, [tabIndex]);
 
   return (
     <Page fullWidth>
-      <Card>
-        <Card.Section>
-          <Button primary onClick={() => onClickpageSelection(2)}>
-            Connection to RouteMagnet
-          </Button>
+      <NavCard
+        isIntegrated={adminCtx.isIntegrated}
+        onClickpageSelection={onClickpageSelection}
+      />
 
-          {/* <div style={{ verticalAlign: "middle" }}> */}
-
-          <Button
-            disabled={!adminCtx.isIntegrated}
-            onClick={() => onClickpageSelection(1)}
-          >
-            Settings
-          </Button>
-          <Button
-            disabled={!adminCtx.isIntegrated}
-            onClick={() => onClickpageSelection(0)}
-          >
-            Orders
-          </Button>
-          <Button>FAQ - Support</Button>
-          {/* <Tabs
-            tabs={tabs}
-            selected={tabIndex}
-            onSelect={handleTabChange}
-          ></Tabs> */}
-
-          {/* </div> */}
-        </Card.Section>
-      </Card>
       {loading ? (
         <React.Fragment>
           <Spinner></Spinner>
