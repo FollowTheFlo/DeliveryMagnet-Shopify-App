@@ -64,10 +64,13 @@ const GET_ORDERS = (itemPerpage: number, filterQuery: string) => gql`
               }
             }
           }
-          customer {
-            email
-            phone
-          }
+          customer{
+          email
+          phone
+          firstName
+          lastName
+          id
+        }
           totalPriceSet {
             shopMoney {
               amount
@@ -177,9 +180,12 @@ const GET_ORDERS_AFTER = (
               }
             }
           }
-        customer{
+          customer{
           email
           phone
+          firstName
+          lastName
+          id
         }
         totalPriceSet{
           shopMoney {
@@ -294,6 +300,9 @@ const GET_ORDERS_PREVIOUS = (
         customer{
           email
           phone
+          firstName
+          lastName
+          id
         }
         totalPriceSet{
           shopMoney {
@@ -373,6 +382,7 @@ const GET_DOMAIN = gql`
       primaryDomain {
         url
       }
+      myshopifyDomain
     }
   }
 `;

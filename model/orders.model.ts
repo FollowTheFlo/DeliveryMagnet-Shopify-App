@@ -40,6 +40,9 @@ export interface WHOrder {
   customer: {
     email: string;
     phone: string;
+    firstName: string;
+    lastName: string;
+    id: string;
   };
   shipping_lines: Shipping_line[];
   line_items: Line_item[];
@@ -109,6 +112,9 @@ export interface ShopifyGraphQLOrder {
   customer: {
     email;
     phone;
+    firstName;
+    lastName;
+    id;
   };
   totalPriceSet: {
     shopMoney: {
