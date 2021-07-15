@@ -12,12 +12,14 @@ import {
 } from "@shopify/polaris";
 import axios from "axios";
 import React, { useEffect, useState, useCallback, useContext } from "react";
+import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import { SuccessResponse } from "../../model/responses.model";
 import AdminContext from "../../store/admin-context";
 
 const Inscription: React.FC = (props) => {
   const [newsletter, setNewsletter] = useState(false);
   const [code, setCode] = useState("");
+  const { displayErrorToast, setErrorToastText } = useErrorToast();
   const ctx = useContext(AdminContext);
 
   const handleSubmit = useCallback((e) => {
@@ -39,8 +41,14 @@ const Inscription: React.FC = (props) => {
         const result = response?.data as SuccessResponse;
         console.log("response integration api", result);
 
-        if (!result || !result.success) {
+        if (!result) {
           console.log("problem while activation");
+          setErrorToastText("Server error");
+          return;
+        }
+        if (result && !result.success) {
+          console.log("problem while activation", result.message);
+          setErrorToastText(result.message);
           return;
         }
 
@@ -59,6 +67,7 @@ const Inscription: React.FC = (props) => {
   return (
     <Layout>
       <Layout.Section>
+        <br />
         <Card title="Activation">
           <Card.Section>
             <List type="bullet">
@@ -121,6 +130,7 @@ const Inscription: React.FC = (props) => {
             </Form>
           </Card.Section>
         </Card>
+        {displayErrorToast}
       </Layout.Section>
       <Layout.Section oneThird></Layout.Section>
     </Layout>
