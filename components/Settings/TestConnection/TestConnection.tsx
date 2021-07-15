@@ -7,7 +7,7 @@ import {
   Spinner,
   Toast,
 } from "@shopify/polaris";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Company } from "../../../model/company.model";
 import { RmJob } from "../../../model/jobs.model";
 import useErrorToast from "../../../hooks/ErrorToast/ErrorToast";
@@ -15,6 +15,7 @@ import ErrorToast from "../../../hooks/ErrorToast/ErrorToast";
 import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
+import AdminContext from "../../../store/admin-context";
 const axios = require("axios");
 
 const TestConnection = (props) => {
@@ -24,6 +25,7 @@ const TestConnection = (props) => {
   const [loading, setLoading] = useState(false);
   const { displayErrorToast, setErrorToastText } = useErrorToast();
   const { displaySuccessToast, setSuccessToastText } = useSuccessToast();
+  const adminCtx = useContext(AdminContext);
 
   const fetchCompany = (): Promise<Company> => {
     return axios
@@ -37,31 +39,33 @@ const TestConnection = (props) => {
   const pushTestOrder = (): Promise<Company> => {
     return axios
       .post(
-        `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add`,
+        `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add_from_app`,
         JSON.stringify(TestOrder)
       )
       .then((response) => {
-        if (response.error) {
+        if (response?.error) {
           console.log(response.error);
+          setErrorToastText("" + response.error ?? "Server error");
           return null;
         }
         const job = response.data as RmJob;
+        //   setSuccessToastText("Test order pushed");
         return job;
       });
+    // .catch((err) => {
+    //   setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
+    // });
   };
 
   const unactiveIntegration = (): Promise<boolean> => {
     return axios
-      .post(
-        `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/unactive`,
-        JSON.stringify(TestOrder)
-      )
+      .get(`${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/unactivate`)
       .then((response) => {
-        if (response.error) {
+        if (response?.error || !response?.data?.success) {
           console.log(response.error);
           return null;
         }
-        const success = response.data as boolean;
+        const success = response.data.success as boolean;
         return success;
       });
   };
@@ -87,7 +91,7 @@ const TestConnection = (props) => {
       const job = await pushTestOrder();
       console.log("push test job", job);
       setLoading(false);
-      setSuccessToast("Order sent succefully");
+      if (job) setSuccessToastText("Order sent succefully");
     } catch (err) {
       setLoading(false);
       setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
@@ -100,6 +104,11 @@ const TestConnection = (props) => {
     try {
       const success = await unactiveIntegration();
       setLoading(false);
+      if (!success) setErrorToastText("Server error");
+      if (success) {
+        setSuccessToast("RouteMagnet Integration unactivated");
+        adminCtx.onIntegrationChange(false);
+      }
     } catch (err) {
       setLoading(false);
       setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
@@ -116,7 +125,7 @@ const TestConnection = (props) => {
           <ButtonGroup>
             <Button onClick={onCheckCompanyInfo}>Check Company Info</Button>
             <Button onClick={onSendTestOrder}>Push Test order</Button>
-            <Button onClick={onUnactiveAccount}>Unactive account</Button>
+            <Button onClick={onUnactiveAccount}>Unactivate account</Button>
           </ButtonGroup>
         </div>
         {company && (
