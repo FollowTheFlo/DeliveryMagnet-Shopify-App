@@ -236,6 +236,24 @@ const OrderList: React.FC = (props) => {
           o.customer.id = o?.customer?.id
             ? o.customer.id.replace("gid://shopify/Customer/", "")
             : "";
+          if (o?.lineItems?.edges?.length > 0) {
+            console.log("in condition1");
+            o.lineItems.edges.forEach((li) => {
+              console.log(
+                "in condition2",
+                li?.node?.fulfillmentService?.location?.id
+              );
+              li.node.fulfillmentService.location.id =
+                li?.node?.fulfillmentService?.location?.id.replace(
+                  "gid://shopify/Location/",
+                  ""
+                ) ?? "";
+              console.log(
+                "in condition3",
+                li?.node?.fulfillmentService?.location?.id
+              );
+            });
+          }
         });
         return ordersList;
       })
@@ -328,6 +346,7 @@ const OrderList: React.FC = (props) => {
   };
 
   const onFulfillOneOrder = (o: JobOrder) => {
+    console.log("onFulfillOneOrder1", o);
     preventRowSelection = true;
     const orderId = o.id;
     // use REST api to fulfill an order, send request to our NextJS server, the our server will request Shopify
@@ -336,6 +355,9 @@ const OrderList: React.FC = (props) => {
         action: "create",
         orderId,
         uId: o?.job?.uId ?? null,
+        locationId:
+          o.lineItems.edges[0]?.node?.fulfillmentService?.location?.id ??
+          "fakeId",
       })
       .then((response) => {
         const result = response?.data as SuccessResponse;

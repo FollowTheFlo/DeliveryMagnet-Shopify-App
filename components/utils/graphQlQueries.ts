@@ -122,6 +122,12 @@ const GET_ORDERS = (itemPerpage: number, filterQuery: string) => gql`
                   id
                   originalSrc
                 }
+                fulfillmentService {
+                  location {
+                    id
+                    name
+                  }
+                }
                 quantity
                 originalUnitPriceSet {
                   shopMoney {
@@ -239,6 +245,12 @@ const GET_ORDERS_AFTER = (
                 id
                 originalSrc
               }
+              fulfillmentService {
+                  location {
+                    id
+                    name
+                  }
+                }
               quantity
               originalUnitPriceSet {
                   shopMoney {
@@ -357,6 +369,12 @@ const GET_ORDERS_PREVIOUS = (
                 originalSrc
               }
               quantity
+              fulfillmentService {
+                  location {
+                    id
+                    name
+                  }
+                }
               originalUnitPriceSet {
                   shopMoney {
                       amount

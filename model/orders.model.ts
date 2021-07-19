@@ -174,6 +174,12 @@ export interface LineItem {
   quantity: number;
   fulfillmentStatus;
   sku: string;
+  fulfillmentService: {
+    location: {
+      id;
+      name;
+    };
+  };
   product: {
     id;
   };
