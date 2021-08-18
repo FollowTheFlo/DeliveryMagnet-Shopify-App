@@ -8,6 +8,7 @@ const convertGraphQlToWebHookOrder = (
     id: o.id,
     test: false, // o.test
     app_id: "routeMagnet",
+    name: o.name,
     cancel_reason: o.cancelReason,
     cancelled_at: o.cancelledAt,
     currency: o.totalPriceSet.shopMoney.currencyCode,

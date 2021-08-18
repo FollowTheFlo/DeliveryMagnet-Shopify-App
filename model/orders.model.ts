@@ -8,6 +8,7 @@ export interface JobOrder extends ShopifyGraphQLOrder {
 
 export interface WHOrder {
   id: string;
+  name: string;
   test: boolean;
   app_id: string;
   browser_ip?: string;
