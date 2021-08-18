@@ -41,7 +41,6 @@ const RouteMagnetCard = (props: JobOrderProps) => {
     "IN_WAITING_QUEUE",
     "IN_PLANNER_BUILDER",
     "IN_ITINERARY_SAVED",
-    "IN_ITINERARY_ASSIGNED",
     "ITINERARY_STARTED",
     "ON_THE_WAY",
     "COMPLETED",
