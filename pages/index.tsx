@@ -13,6 +13,7 @@ import axios from "axios";
 import { SuccessResponse } from "../model/responses.model";
 import AdminContext from "../store/admin-context";
 import NavCard from "../components/NavCard/NavCard";
+import Builder from "../components/Builder/Builder";
 
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
@@ -71,6 +72,7 @@ const Index: React.FC = (props) => {
   }, []);
 
   const displayTabsPage = useCallback(() => {
+    console.log("displayTabsPage", tabIndex);
     if (tabIndex === 0) {
       return (
         <React.Fragment>
@@ -87,6 +89,13 @@ const Index: React.FC = (props) => {
       return (
         <React.Fragment>
           <Inscription />
+        </React.Fragment>
+      );
+    } else if (tabIndex === 3) {
+      console.log("display Builder");
+      return (
+        <React.Fragment>
+          <Builder />
         </React.Fragment>
       );
     }
