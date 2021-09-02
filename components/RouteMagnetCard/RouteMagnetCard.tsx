@@ -100,7 +100,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
   const readyForDeliveryDetails = (j: JobOrder, isCurrentStatus: boolean) => {
     console.log("readyForDeliveryDetails");
     if (isCurrentStatus) {
-      return <p>Action needed: Push to RouteMagnet</p>;
+      return <p>Action needed: Push to Planner</p>;
     }
 
     return (

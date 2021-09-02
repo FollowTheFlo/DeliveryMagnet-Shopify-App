@@ -26,7 +26,7 @@ const NavCard = (props) => {
             disabled={!props.isIntegrated}
             onClick={() => props.onClickpageSelection(3)}
           >
-            Builder
+            Planner
           </Button>
           <Button>FAQ - Support</Button>
         </ButtonGroup>

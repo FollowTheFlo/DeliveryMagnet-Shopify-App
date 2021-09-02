@@ -14,6 +14,7 @@ import { SuccessResponse } from "../model/responses.model";
 import AdminContext from "../store/admin-context";
 import NavCard from "../components/NavCard/NavCard";
 import Builder from "../components/Builder/Builder";
+import styles from "./index.module.css";
 
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
@@ -91,14 +92,15 @@ const Index: React.FC = (props) => {
           <Inscription />
         </React.Fragment>
       );
-    } else if (tabIndex === 3) {
-      console.log("display Builder");
-      return (
-        <React.Fragment>
-          <Builder />
-        </React.Fragment>
-      );
     }
+    // else if (tabIndex === 3) {
+    //   console.log("display Builder");
+    //   return (
+    //     <React.Fragment>
+    //       <Builder />
+    //     </React.Fragment>
+    //   );
+    // }
   }, [tabIndex]);
 
   return (
@@ -111,14 +113,15 @@ const Index: React.FC = (props) => {
       {loading ? (
         <React.Fragment>
           <Spinner></Spinner>
-          {/* <p>Loading</p>
-        <Image src='/me.png' alt="me" width={100} height={100} /> */}
         </React.Fragment>
       ) : adminCtx.isIntegrated ? (
         displayTabsPage()
       ) : (
         <Inscription />
       )}
+      <div className={tabIndex === 3 ? styles.show : styles.hide}>
+        <Builder />
+      </div>
     </Page>
   );
 };

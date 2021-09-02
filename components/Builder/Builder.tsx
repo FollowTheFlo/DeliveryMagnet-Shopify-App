@@ -10,7 +10,7 @@ const Builder: React.FC = (props) => {
         frameBorder="0"
         width="100%"
         height="800px"
-        src="https://app.routemagnet.com"
+        src={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}`}
       ></iframe>
     </React.Fragment>
   );
