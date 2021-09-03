@@ -26,7 +26,7 @@ const NavCard = (props) => {
             disabled={!props.isIntegrated}
             onClick={() => props.onClickpageSelection(3)}
           >
-            Planner
+            Planner {props?.newJobsCount > 0 ? " +" + props.newJobsCount : ""}
           </Button>
           <Button>FAQ - Support</Button>
         </ButtonGroup>

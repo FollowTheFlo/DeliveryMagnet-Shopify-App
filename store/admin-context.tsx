@@ -26,6 +26,8 @@ const AdminContext = React.createContext({
   onPageInfoChange: (value) => {},
   refreshDate: "",
   onRefreshDateChange: (value) => {},
+  newJobsCount: 0,
+  onSetNewJobsCount: (value) => {},
 } as AdminContextType);
 
 export const AdminContextProvider = (props) => {
@@ -48,6 +50,7 @@ export const AdminContextProvider = (props) => {
   const [refreshDate, setRefreshDate] = useState<string>("");
   const [selectedDeliveryType, setSelectedDeliveryType] = useState(["local"]);
   const [ordersTitle, setOrdersTitle] = useState("Local Delivery Orders");
+  const [newJobsCount, setNewJobsCount] = useState(0);
 
   useEffect(() => {
     // get mode from server
@@ -108,8 +111,10 @@ export const AdminContextProvider = (props) => {
         updatedJobOrders[index] = updatedJob;
         console.log("prev2", prevJobOrders);
       }
+
       return updatedJobOrders;
     });
+    increaseNewJobsCounter();
   };
 
   const onIntegrationHandler = (val: boolean) => {
@@ -135,6 +140,15 @@ export const AdminContextProvider = (props) => {
     setSelectedDeliveryType(val);
   };
 
+  const onSetNewJobsCountHandler = (val: number) => {
+    setNewJobsCount(val);
+  };
+
+  const increaseNewJobsCounter = () => {
+    const updatedCount = newJobsCount + 1;
+    setNewJobsCount(updatedCount);
+  };
+
   return (
     <AdminContext.Provider
       value={{
@@ -158,6 +172,8 @@ export const AdminContextProvider = (props) => {
         onSetOrdersTitle: onSetOrdersTitlehandler,
         selectedDeliveryType: selectedDeliveryType,
         onSetSelectedDeliveryType: onSetSelectedDeliveryTypeHandler,
+        newJobsCount: newJobsCount,
+        onSetNewJobsCount: onSetNewJobsCountHandler,
       }}
     >
       {props.children}

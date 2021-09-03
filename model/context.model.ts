@@ -24,4 +24,6 @@ export interface AdminContextType {
   onSetOrdersTitle: (value: string) => void;
   selectedDeliveryType: string[];
   onSetSelectedDeliveryType: (value: string[]) => void;
+  newJobsCount: number;
+  onSetNewJobsCount: (value: number) => void;
 }

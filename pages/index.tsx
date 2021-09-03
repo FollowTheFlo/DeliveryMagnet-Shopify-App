@@ -92,15 +92,10 @@ const Index: React.FC = (props) => {
           <Inscription />
         </React.Fragment>
       );
+    } else if (tabIndex === 3) {
+      console.log("display Builder");
+      adminCtx.onSetNewJobsCount(0);
     }
-    // else if (tabIndex === 3) {
-    //   console.log("display Builder");
-    //   return (
-    //     <React.Fragment>
-    //       <Builder />
-    //     </React.Fragment>
-    //   );
-    // }
   }, [tabIndex]);
 
   return (
@@ -108,6 +103,7 @@ const Index: React.FC = (props) => {
       <NavCard
         isIntegrated={adminCtx.isIntegrated}
         onClickpageSelection={onClickpageSelection}
+        newJobsCount={adminCtx.newJobsCount}
       />
 
       {loading ? (
