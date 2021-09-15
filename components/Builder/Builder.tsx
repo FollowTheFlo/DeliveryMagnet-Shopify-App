@@ -9,7 +9,7 @@ const Builder: React.FC = (props) => {
       <iframe
         frameBorder="0"
         width="100%"
-        height="800px"
+        height="1280px"
         src={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}`}
       ></iframe>
     </React.Fragment>
