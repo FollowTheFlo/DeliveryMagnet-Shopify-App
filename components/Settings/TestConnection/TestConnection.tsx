@@ -16,6 +16,7 @@ import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
 import AdminContext from "../../../store/admin-context";
+import styles from "./TestConnection.module.css";
 const axios = require("axios");
 
 const TestConnection = (props) => {
@@ -145,7 +146,7 @@ const TestConnection = (props) => {
               </div>
               {company.imageUrl && (
                 <div>
-                  <img src={company.imageUrl}></img>
+                  <img className={styles.logo} src={company.imageUrl}></img>
                 </div>
               )}
             </Card.Section>
