@@ -41,7 +41,13 @@ const TestConnection = (props) => {
     return axios
       .post(
         `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/order/add_from_app`,
-        JSON.stringify(TestOrder)
+        JSON.stringify({
+          ...TestOrder,
+          order_status_url: TestOrder.order_status_url.replace(
+            "domain",
+            adminCtx.domain
+          ),
+        })
       )
       .then((response) => {
         if (response?.error) {
@@ -77,6 +83,10 @@ const TestConnection = (props) => {
     try {
       const company = await fetchCompany();
       setLoading(false);
+      if (company._id && !company.location && !company.name) {
+        setErrorToastText("Company found but address and name are empty");
+        return;
+      }
       setCompany(company);
       setSuccessToast("Company found");
     } catch (err) {

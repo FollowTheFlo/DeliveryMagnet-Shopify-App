@@ -230,7 +230,7 @@ const Settings: React.FC = (props) => {
         <Inscription />
       ) : (
         <Layout>
-          <Layout.Section oneThird>
+          {/* <Layout.Section oneThird>
             <Card title="Delivery Service Duration">
               {serviceLoading && (
                 <div className={styles.centerEl}>
@@ -256,8 +256,8 @@ const Settings: React.FC = (props) => {
                 </Button>
               </Card.Section>
             </Card>
-          </Layout.Section>
-          <Layout.Section oneThird>
+          </Layout.Section> */}
+          <Layout.Section oneHalf>
             <TestConnection />
           </Layout.Section>
         </Layout>

@@ -15,10 +15,14 @@ import React, { useEffect, useState, useCallback, useContext } from "react";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import { SuccessResponse } from "../../model/responses.model";
 import AdminContext from "../../store/admin-context";
+import styles from "./Inscription.module.css";
 
 const Inscription: React.FC = (props) => {
   const [newsletter, setNewsletter] = useState(false);
   const [code, setCode] = useState("");
+  const [url, setUrl] = useState(
+    `${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/builder?action=register`
+  );
   const { displayErrorToast, setErrorToastText } = useErrorToast();
   const ctx = useContext(AdminContext);
 
@@ -66,40 +70,39 @@ const Inscription: React.FC = (props) => {
 
   return (
     <Layout>
-      <Layout.Section>
+      <Layout.Section oneHalf>
         <br />
         <Card title="Activation">
           <Card.Section>
             <List type="bullet">
               <List.Item>
                 <b>Step1:</b> Create a free RouteMagnet account on{" "}
-                <a
-                  target="_blank"
-                  href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/register`}
+                <div
+                  className={styles.clickable}
+                  onClick={() =>
+                    setUrl(
+                      `${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/builder?action=register`
+                    )
+                  }
                 >
                   Register
-                </a>
+                </div>
               </List.Item>
               <List.Item>
-                <b>Step2:</b> Create a team on RouteMagnet{" "}
-                <a
-                  target="_blank"
-                  href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/dashboard`}
-                >
-                  Dashboard
-                </a>
-              </List.Item>
-              <List.Item>
-                <b>Step3:</b> Generate API code on{" "}
-                <a
-                  target="_blank"
-                  href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/integration`}
+                <b>Step2:</b> Generate API code on{" "}
+                <div
+                  className={styles.clickable}
+                  onClick={() =>
+                    setUrl(
+                      `${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/integration`
+                    )
+                  }
                 >
                   Integration page
-                </a>
+                </div>
               </List.Item>
               <List.Item>
-                <b>Step4:</b> Copy and paste API code below, Press 'Connect with
+                <b>Step3:</b> Copy and paste API code below, Press 'Connect with
                 RouteMagnet'
               </List.Item>
             </List>
@@ -132,7 +135,16 @@ const Inscription: React.FC = (props) => {
         </Card>
         {displayErrorToast}
       </Layout.Section>
-      <Layout.Section oneThird></Layout.Section>
+      <Layout.Section oneHalf>
+        <React.Fragment>
+          <iframe
+            frameBorder="0"
+            width="100%"
+            height="600px"
+            src={url}
+          ></iframe>
+        </React.Fragment>
+      </Layout.Section>
     </Layout>
   );
 };

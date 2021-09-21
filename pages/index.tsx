@@ -101,6 +101,7 @@ const Index: React.FC = (props) => {
   return (
     <Page fullWidth>
       <NavCard
+        tabIndex={tabIndex}
         isIntegrated={adminCtx.isIntegrated}
         onClickpageSelection={onClickpageSelection}
         newJobsCount={adminCtx.newJobsCount}
