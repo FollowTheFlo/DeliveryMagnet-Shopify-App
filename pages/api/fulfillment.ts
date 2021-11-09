@@ -106,7 +106,7 @@ const getOrderFulfillment = async (
     const fulfillment: ShopifyOrderFullFillments = await fetchApi({
       method: "get",
       headers,
-      url: `https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,
+      url: `https://${shop}/admin/api/2021-10/orders/${orderId}/fulfillments.json`,
     });
     //  body:JSON.stringify({fulfillment: { location_id: 123456789 }})
     // .get('https://' + shop + '/admin/api/2020-04/webhooks.json', {headers})
@@ -171,7 +171,7 @@ const postOrderFullfillment = async (
     const response = await fetchApi({
       method: "post",
       headers,
-      url: `https://${shop}/admin/api/2021-04/orders/${orderId}/fulfillments.json`,
+      url: `https://${shop}/admin/api/2021-10/orders/${orderId}/fulfillments.json`,
       body: JSON.stringify(
         uId
           ? {

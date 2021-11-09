@@ -1,6 +1,6 @@
 import { PageInfo } from "./input.model";
 import { RmJob, RmJobWithStep } from "./jobs.model";
-import { JobOrder } from "./orders.model";
+import { JobOrder, ShopifyGraphQLOrder } from "./orders.model";
 import { WhMode } from "./webhooks.model";
 
 export interface AdminContextType {

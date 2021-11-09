@@ -20,6 +20,7 @@ import {
 import OrderItem from "./OrderItem/OrderItem";
 import {
   GET_DOMAIN,
+  GET_ONE_ORDER,
   GET_ORDERS,
   GET_ORDERS_AFTER,
   GET_ORDERS_PREVIOUS,
@@ -179,6 +180,64 @@ const OrderList: React.FC = (props) => {
     return deliveryTypeQuery;
   };
 
+  const formatOrder = (or: ShopifyGraphQLOrder) => {
+    or.id = or.id.replace("gid://shopify/Order/", "");
+    or.createdAt = new Date(or.createdAt)
+      .toLocaleString("en-GB")
+      .replace(/(:\d{2}| [AP]M)$/, "");
+    or["customer"]["id"] = or?.customer?.id
+      ? or.customer.id.replace("gid://shopify/Customer/", "")
+      : "";
+    if (or?.lineItems?.edges?.length > 0) {
+      console.log("in condition1");
+      or.lineItems.edges.forEach((li) => {
+        li.node.fulfillmentService.location.id =
+          li?.node?.fulfillmentService?.location?.id.replace(
+            "gid://shopify/Location/",
+            ""
+          ) ?? "";
+      });
+    }
+  };
+
+  const fetchOneShopifyOrder = (orderId: string): Promise<JobOrder> => {
+    console.log("getOneShopifyOrder", orderId);
+    let gqlQuery = GET_ONE_ORDER(orderId);
+    return client
+      .query({ query: gqlQuery, fetchPolicy: "no-cache" })
+      .then((data) => {
+        console.log("getOneShopifyOrder", orderId);
+        if (!data?.data?.order) return null;
+
+        const or = data.data.order as ShopifyGraphQLOrder;
+        // change by ref, no copy returned
+        formatOrder(or);
+        console.log("flo order", or);
+        // or.createdAt = new Date(or.createdAt)
+        //   .toLocaleString("en-GB")
+        //   .replace(/(:\d{2}| [AP]M)$/, "");
+        // or["customer"]["id"] = or?.customer?.id
+        //   ? or.customer.id.replace("gid://shopify/Customer/", "")
+        //   : "";
+        // if (or?.lineItems?.edges?.length > 0) {
+        //   console.log("in condition1");
+        //   or.lineItems.edges.forEach((li) => {
+        //     li.node.fulfillmentService.location.id =
+        //       li?.node?.fulfillmentService?.location?.id.replace(
+        //         "gid://shopify/Location/",
+        //         ""
+        //       ) ?? "";
+        //   });
+        // }
+
+        const jobOrder: JobOrder = {
+          ...or,
+          job: null,
+          statusAction: getStatusAction(or.displayFulfillmentStatus, null),
+        };
+        return jobOrder;
+      });
+  };
   const queryShopifyOrders = (
     deliveryType: string[],
     cursor?: CursorSelection
@@ -230,30 +289,32 @@ const OrderList: React.FC = (props) => {
         // format date with friendly form, eg: 17/06/2021, 15:07
         // note that this operation in map iterator above give us 'Unknow Date', below is the workaround
         ordersList.forEach((o) => {
-          o.createdAt = new Date(o.createdAt)
-            .toLocaleString("en-GB")
-            .replace(/(:\d{2}| [AP]M)$/, "");
-          o.customer.id = o?.customer?.id
-            ? o.customer.id.replace("gid://shopify/Customer/", "")
-            : "";
-          if (o?.lineItems?.edges?.length > 0) {
-            console.log("in condition1");
-            o.lineItems.edges.forEach((li) => {
-              console.log(
-                "in condition2",
-                li?.node?.fulfillmentService?.location?.id
-              );
-              li.node.fulfillmentService.location.id =
-                li?.node?.fulfillmentService?.location?.id.replace(
-                  "gid://shopify/Location/",
-                  ""
-                ) ?? "";
-              console.log(
-                "in condition3",
-                li?.node?.fulfillmentService?.location?.id
-              );
-            });
-          }
+          formatOrder(o);
+          // o.id.replace("gid://shopify/Order/", "");
+          // o.createdAt = new Date(o.createdAt)
+          //   .toLocaleString("en-GB")
+          //   .replace(/(:\d{2}| [AP]M)$/, "");
+          // o["customer"]["id"] = o?.customer?.id
+          //   ? o.customer.id.replace("gid://shopify/Customer/", "")
+          //   : "";
+          // if (o?.lineItems?.edges?.length > 0) {
+          //   console.log("in condition1");
+          //   o.lineItems.edges.forEach((li) => {
+          //     console.log(
+          //       "in condition2",
+          //       li?.node?.fulfillmentService?.location?.id
+          //     );
+          //     li.node.fulfillmentService.location.id =
+          //       li?.node?.fulfillmentService?.location?.id.replace(
+          //         "gid://shopify/Location/",
+          //         ""
+          //       ) ?? "";
+          //     console.log(
+          //       "in condition3",
+          //       li?.node?.fulfillmentService?.location?.id
+          //     );
+          // });
+          // }
         });
         return ordersList;
       })
@@ -271,7 +332,7 @@ const OrderList: React.FC = (props) => {
     console.log("queryRmOrders", ordersList);
 
     ordersList = ordersList.map((o) => {
-      // format id, we remove prefix 'gid://shopify/Order/' to get the unique id
+      // format id, we remove prefix 'gid://shopify/Order/' to get the unique id, should be already in correct format
       return { ...o, id: o.id.replace("gid://shopify/Order/", "") };
     });
 
@@ -363,7 +424,13 @@ const OrderList: React.FC = (props) => {
         const result = response?.data as SuccessResponse;
         console.log("response webhooks api", result);
         if (result.success) {
-          onRefresh();
+          fetchOneShopifyOrder("gid://shopify/Order/" + orderId).then(
+            (order) => {
+              console.log("flo2", order);
+              adminCtx.onOneJobOrderChange(order);
+            }
+          );
+          //  onRefresh();
         }
       })
       .catch((err) => {

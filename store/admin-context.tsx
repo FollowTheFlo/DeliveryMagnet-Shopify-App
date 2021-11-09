@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { AdminContextType } from "../model/context.model";
 import { PageInfo } from "../model/input.model";
 import { RmJob, RmJobWithStep } from "../model/jobs.model";
-import { JobOrder } from "../model/orders.model";
+import { JobOrder, ShopifyGraphQLOrder } from "../model/orders.model";
 import { WhMode } from "../model/webhooks.model";
 
 const AdminContext = React.createContext({
@@ -48,8 +48,13 @@ export const AdminContextProvider = (props) => {
     hasNextPage: false,
   });
   const [refreshDate, setRefreshDate] = useState<string>("");
-  const [selectedDeliveryType, setSelectedDeliveryType] = useState(["local"]);
-  const [ordersTitle, setOrdersTitle] = useState("Local Delivery Orders");
+  const [selectedDeliveryType, setSelectedDeliveryType] = useState([
+    "local",
+    "shipping",
+  ]);
+  const [ordersTitle, setOrdersTitle] = useState(
+    "Local Delivery & shipping Orders"
+  );
   const [newJobsCount, setNewJobsCount] = useState(0);
 
   useEffect(() => {
@@ -89,10 +94,18 @@ export const AdminContextProvider = (props) => {
     console.log("onOneJobOrderChangeHandler", job);
     // find index first
     const index = jobOrders.findIndex((j) => j.id === job.id);
-    if (index === -1) return;
-    const jobOrdersCopy = jobOrders.slice();
-    jobOrdersCopy[index] = job;
-    setJobOrders(jobOrdersCopy);
+    if (index === -1) {
+      console.log("index not found", job.id);
+      return;
+    }
+    //   const jobOrdersCopy = jobOrders.slice();
+    // jobOrdersCopy[index] = job;
+    //  setJobOrders(jobOrdersCopy);
+    setJobOrders((prevJobOrders: JobOrder[]) => {
+      const jobOrdersCopy = prevJobOrders.slice();
+      jobOrdersCopy[index] = job;
+      return jobOrdersCopy;
+    });
   };
 
   const onJobOrderPushHandler = (rmJob: RmJob) => {
@@ -115,6 +128,20 @@ export const AdminContextProvider = (props) => {
       return updatedJobOrders;
     });
     increaseNewJobsCounter();
+  };
+
+  const onOneJobOrderUpdateHandler = (job: JobOrder) => {
+    const index = jobOrders.findIndex((j) => j.id === job.id);
+    if (index === -1) return;
+    //   const jobOrdersCopy = jobOrders.slice();
+    // jobOrdersCopy[index] = job;
+    //  setJobOrders(jobOrdersCopy);
+    setJobOrders((prevJobOrders: JobOrder[]) => {
+      const jobOrdersCopy = prevJobOrders.slice();
+      jobOrdersCopy[index] = job;
+      return jobOrdersCopy;
+    });
+    return null;
   };
 
   const onIntegrationHandler = (val: boolean) => {
