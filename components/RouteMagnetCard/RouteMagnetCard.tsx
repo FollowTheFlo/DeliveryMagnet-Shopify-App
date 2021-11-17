@@ -137,7 +137,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
         </React.Fragment>
       );
     }
-    return <p>Not in Routemagnet waiting list</p>;
+    return <p>Not in DeliveryMagnet waiting list</p>;
   };
   const inPlannerBuilderDetails = (j: JobOrder, isCurrentStatus: boolean) => {
     if (j?.job?.pickedAt) {
@@ -320,7 +320,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
   };
   const statusStack = (o: JobOrder) => {
     return (
-      <Card title="RouteMagnet Local Delivery">
+      <Card title="DeliveryMagnet deliveries">
         <Card.Section>
           {statusList.map((status, i) => {
             // detailsMapping[status].show = i === index ? true  : false;

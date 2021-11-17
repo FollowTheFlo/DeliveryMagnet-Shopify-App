@@ -117,7 +117,7 @@ const TestConnection = (props) => {
       setLoading(false);
       if (!success) setErrorToastText("Server error");
       if (success) {
-        setSuccessToast("RouteMagnet Integration unactivated");
+        setSuccessToast("DeliveryMagnet Integration unactivated");
         adminCtx.onIntegrationChange(false);
       }
     } catch (err) {

@@ -1,7 +1,7 @@
 const TestOrder = {
   id: "12345678910",
   test: true,
-  app_id: "routeMagnet",
+  app_id: "deliveryMagnet",
   cancel_reason: null,
   cancelled_at: null,
   currency: "CAD",

@@ -187,7 +187,7 @@ const Settings: React.FC = (props) => {
     <React.Fragment>
       <br />
 
-      {/* <Card title="Orders Push Methods from Shopify to RouteMagnet">
+      {/* <Card title="Orders Push Methods from Shopify to DeliveryMagnet">
        {
          webHooksLoading && <div  className={styles.centerEl}><Spinner accessibilityLabel="Loading" size="small" /></div>
        }

@@ -82,7 +82,7 @@ function MyApp(props) {
   return (
     <React.Fragment>
       <Head>
-        <title>RouteMagnet Local Delivery</title>
+        <title>DeliveryMagnet Deliveries</title>
         <meta charSet="utf-8" />
       </Head>
       <Provider config={config}>

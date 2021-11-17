@@ -162,8 +162,8 @@ const postOrderFullfillment = async (
       fulfillment: {
         location_id: locationId,
         notify_customer: false,
-        tracking_company: "RouteMagnet",
-        message: "Delivery managed by RM",
+        tracking_company: "DeliveryMagnet",
+        message: "Your delivery managed by DeliveryMagnetM",
         shipment_status: "ready_for_pickup",
       },
     };

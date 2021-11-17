@@ -76,7 +76,7 @@ const Inscription: React.FC = (props) => {
           <Card.Section>
             <List type="bullet">
               <List.Item>
-                <b>Step1:</b> Create a free RouteMagnet account on{" "}
+                <b>Step1:</b> Create a free DeliveryMagnet account on{" "}
                 <div
                   className={styles.clickable}
                   onClick={() =>
@@ -103,7 +103,7 @@ const Inscription: React.FC = (props) => {
               </List.Item>
               <List.Item>
                 <b>Step3:</b> Copy and paste API code below, Press 'Connect with
-                RouteMagnet'
+                DeliveryMagnet'
               </List.Item>
             </List>
 
@@ -127,7 +127,7 @@ const Inscription: React.FC = (props) => {
                 />
 
                 <Button disabled={!code} submit>
-                  Connect with RouteMagnet
+                  Connect with DeliveryMagnet
                 </Button>
               </FormLayout>
             </Form>

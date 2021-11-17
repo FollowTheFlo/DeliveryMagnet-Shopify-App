@@ -97,7 +97,7 @@ const OrderList: React.FC = (props) => {
     queryShopifyOrders(filter, cursor)
       .then((shopifyOrders) => {
         console.log("return queryShopifyOrders", shopifyOrders);
-        setLoadingMessage("Loading RouteMagnet data");
+        setLoadingMessage("Loading DeliveryMagnet data");
         // 2 -> fetch Deliveries (called Jobs) on RM associated with shopify order IDs
         return queryRmOrders(shopifyOrders);
       })

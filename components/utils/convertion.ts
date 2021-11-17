@@ -7,7 +7,7 @@ const convertGraphQlToWebHookOrder = (
   return {
     id: o.id,
     test: false, // o.test
-    app_id: "routeMagnet",
+    app_id: "deliveryMagnet",
     name: o.name,
     cancel_reason: o.cancelReason,
     cancelled_at: o.cancelledAt,
