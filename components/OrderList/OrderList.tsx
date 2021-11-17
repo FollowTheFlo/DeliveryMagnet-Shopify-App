@@ -172,7 +172,7 @@ const OrderList: React.FC = (props) => {
       filterList.includes("local") &&
       filterList.includes("shipping")
     ) {
-      adminCtx.onSetOrdersTitle("Local Delivery & shipping Orders");
+      adminCtx.onSetOrdersTitle("Local Delivery & Shipping Orders");
       deliveryTypeQuery += "delivery_method:local OR delivery_method:shipping";
     } else {
       deliveryTypeQuery += "delivery_method:local";
