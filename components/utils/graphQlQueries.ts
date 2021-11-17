@@ -481,7 +481,7 @@ const GET_ONE_ORDER = (orderId: string) => gql`
               }
             }
           }
-          lineItems(first: 5) {
+          lineItems(first: 15) {
             edges {
               node {
                 id
