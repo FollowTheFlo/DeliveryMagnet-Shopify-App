@@ -587,7 +587,9 @@ const OrderList: React.FC = (props) => {
               <span className={styles.refreshMessage}>{loadingMessage}</span>
             )}
             &nbsp;
-            <Button onClick={() => onRefresh()}>Refresh</Button>
+            <Button onClick={() => onRefresh(["local", "shipping"])}>
+              Refresh
+            </Button>
           </div>
         </Stack.Item>
       </Stack>
