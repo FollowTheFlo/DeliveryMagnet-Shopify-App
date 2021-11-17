@@ -11,6 +11,13 @@ export interface JobOrderProps {
   onFulfillOrder: (o: JobOrder) => void;
 }
 
+export interface JobOrderWithLoaderProps {
+  order: JobOrder;
+  loader: boolean;
+  onPushOrder: (o: JobOrder) => void;
+  onFulfillOrder: (o: JobOrder) => void;
+}
+
 export interface PageInfo {
   hasNextPage: boolean;
   hasPreviousPage: boolean;

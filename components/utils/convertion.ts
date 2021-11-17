@@ -1,4 +1,8 @@
-import { JobOrder, WHOrder } from "../../model/orders.model";
+import {
+  JobOrder,
+  ShopifyGraphQLOrder,
+  WHOrder,
+} from "../../model/orders.model";
 
 const convertGraphQlToWebHookOrder = (
   o: JobOrder,

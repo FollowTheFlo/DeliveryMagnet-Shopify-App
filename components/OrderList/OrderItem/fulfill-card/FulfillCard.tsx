@@ -14,10 +14,13 @@ import {
   wordsMapping,
 } from "../../../utils/mapping";
 import { useReactiveVar } from "@apollo/client";
-import { JobOrderProps } from "../../../../model/input.model";
+import {
+  JobOrderProps,
+  JobOrderWithLoaderProps,
+} from "../../../../model/input.model";
 
-const FulfillCard = (props: JobOrderProps) => {
-  const { order, onPushOrder, onFulfillOrder } = props;
+const FulfillCard = (props: JobOrderWithLoaderProps) => {
+  const { order, loader, onPushOrder, onFulfillOrder } = props;
 
   const onActionClicked = (action: string) => {
     console.log("onAction", action);
@@ -96,11 +99,13 @@ const FulfillCard = (props: JobOrderProps) => {
       primaryFooterAction={{
         content: wordsMapping[order.statusAction.action],
         onAction: () => onActionClicked(order.statusAction.action),
+        disabled: loader,
       }}
       actions={[
         {
-          content: wordsMapping[order.statusAction.action],
+          content: loader ? "Loading" : wordsMapping[order.statusAction.action],
           onAction: () => onActionClicked(order.statusAction.action),
+          disabled: loader,
         },
       ]}
     >
