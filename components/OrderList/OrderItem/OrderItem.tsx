@@ -23,38 +23,24 @@ import {
   ShopifyGraphQLOrder,
   WHOrder,
 } from "../../../model/orders.model";
-import fetchApi from "../../utils/fetchApi";
-import LineItem from "./lineItem/LineItem";
-import LineItemBlock from "./lineItem/LineItem";
-import { StatusAction } from "../../../model/input.model";
 import {
   wordsMapping,
   currencyMapping,
   paidStatusMapping,
 } from "../../utils/mapping";
-import { convertGraphQlToWebHookOrder } from "../../utils/convertion";
 
 type OrderItemProps = {
   id: string;
   order: JobOrder;
   onPushOrder: (o: JobOrder) => void;
-  isManualMode: boolean;
   onFulfillOrder: (o: JobOrder) => void;
-  domain: string;
   index: number;
   selectedResources: string[];
 };
 
 const OrderItem = (props: OrderItemProps) => {
-  const {
-    selectedResources,
-    index,
-    order,
-    onPushOrder,
-    isManualMode,
-    onFulfillOrder,
-    domain,
-  } = props;
+  const { selectedResources, index, order, onPushOrder, onFulfillOrder } =
+    props;
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
 
   useEffect(() => {
