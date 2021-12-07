@@ -6,22 +6,16 @@ import { JobOrder, ShopifyGraphQLOrder } from "../model/orders.model";
 import { WhMode } from "../model/webhooks.model";
 
 const AdminContext = React.createContext({
-  domain: "",
-  onDomainChange: (value) => {},
-  mode: {
-    manual: false,
-    auto_create: false,
-    auto_fullfill: false,
-  }, // manual, auto_create, auto_fullfill
-  onModeSelected: (option, value) => {},
+  // domain: "",
+  // onDomainChange: (value) => {},
   jobOrders: [],
   onJobOrdersChange: (jOrders) => {},
   onOneJobOrderChange: (jOrder) => {},
   onJobOrderPush: (rMOrderWithStep) => {},
-  isIntegrated: false,
-  onIntegrationChange: (value) => {},
-  defaultServiceDuration: 0,
-  onDefaultServiceDurationChange: (value) => {},
+  // isIntegrated: false,
+  // onIntegrationChange: (value) => {},
+  // defaultServiceDuration: 0,
+  // onDefaultServiceDurationChange: (value) => {},
   pageInfo: null,
   onPageInfoChange: (value) => {},
   refreshDate: "",
@@ -39,10 +33,7 @@ export const AdminContextProvider = (props) => {
     auto_fullfill: false,
   });
 
-  const [domain, setDomain] = useState<string>("");
   const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
-  const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
-  const [defaultServiceDuration, setDefaultServiceDuration] = useState(0);
   const [pageInfo, setPageInfo] = useState({
     hasPreviousPage: false,
     hasNextPage: false,
@@ -62,29 +53,6 @@ export const AdminContextProvider = (props) => {
     console.log("admin context");
   }, []);
 
-  const onDefaultServiceDurationChangeHandler = (value) => {
-    console.log("domainHandler", value);
-    setDefaultServiceDuration(value);
-  };
-
-  const domainHandler = (value) => {
-    console.log("domainHandler", value);
-    setDomain(value);
-  };
-
-  const modeSelectionHandler = (option: string, checked: boolean) => {
-    console.log("modeSelectionHandler", option, checked);
-    // set all to false
-    const updatedMode = {
-      manual: false,
-      auto_create: false,
-      auto_fullfill: false,
-    };
-    updatedMode[option] = checked;
-    console.log("updatedMode", updatedMode);
-    setMode(updatedMode);
-  };
-
   const onJobOrdersChangeHandler = (jList: JobOrder[]) => {
     console.log("onJobOrdersHandler", jList);
     setJobOrders(jList);
@@ -98,9 +66,6 @@ export const AdminContextProvider = (props) => {
       console.log("index not found", job.id);
       return;
     }
-    //   const jobOrdersCopy = jobOrders.slice();
-    // jobOrdersCopy[index] = job;
-    //  setJobOrders(jobOrdersCopy);
     setJobOrders((prevJobOrders: JobOrder[]) => {
       const jobOrdersCopy = prevJobOrders.slice();
       jobOrdersCopy[index] = job;
@@ -144,11 +109,6 @@ export const AdminContextProvider = (props) => {
     return null;
   };
 
-  const onIntegrationHandler = (val: boolean) => {
-    console.log("onIntegrationHandler:", val);
-    setIsIntegrated(val);
-  };
-
   const onPageInfoChangeHandler = (val: PageInfo) => {
     console.log("onPageInfoChangeHandler:", val);
     setPageInfo(val);
@@ -179,18 +139,16 @@ export const AdminContextProvider = (props) => {
   return (
     <AdminContext.Provider
       value={{
-        mode: mode,
-        onModeSelected: modeSelectionHandler,
-        domain: domain,
-        onDomainChange: domainHandler,
+        // domain: domain,
+        //  onDomainChange: domainHandler,
         jobOrders: jobOrders,
         onJobOrdersChange: onJobOrdersChangeHandler,
         onOneJobOrderChange: onOneJobOrderChangeHandler,
         onJobOrderPush: onJobOrderPushHandler,
-        isIntegrated: isIntegrated,
-        onIntegrationChange: onIntegrationHandler,
-        defaultServiceDuration: defaultServiceDuration,
-        onDefaultServiceDurationChange: onDefaultServiceDurationChangeHandler,
+        //  isIntegrated: isIntegrated,
+        //  onIntegrationChange: onIntegrationHandler,
+        //   defaultServiceDuration: defaultServiceDuration,
+        //   onDefaultServiceDurationChange: onDefaultServiceDurationChangeHandler,
         pageInfo: pageInfo,
         onPageInfoChange: onPageInfoChangeHandler,
         refreshDate: refreshDate,

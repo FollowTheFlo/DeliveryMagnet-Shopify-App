@@ -17,6 +17,7 @@ import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
 import AdminContext from "../../../store/admin-context";
 import styles from "./TestConnection.module.css";
+import IntegrationContext from "../../../store/integration-context";
 const axios = require("axios");
 
 const TestConnection = (props) => {
@@ -26,7 +27,8 @@ const TestConnection = (props) => {
   const [loading, setLoading] = useState(false);
   const { displayErrorToast, setErrorToastText } = useErrorToast();
   const { displaySuccessToast, setSuccessToastText } = useSuccessToast();
-  const adminCtx = useContext(AdminContext);
+  // const adminCtx = useContext(AdminContext);
+  const integrationCtx = useContext(IntegrationContext);
 
   const fetchCompany = (): Promise<Company> => {
     return axios
@@ -45,7 +47,7 @@ const TestConnection = (props) => {
           ...TestOrder,
           order_status_url: TestOrder.order_status_url.replace(
             "domain",
-            adminCtx.domain
+            integrationCtx.domain
           ),
         })
       )
@@ -56,12 +58,8 @@ const TestConnection = (props) => {
           return null;
         }
         const job = response.data as RmJob;
-        //   setSuccessToastText("Test order pushed");
         return job;
       });
-    // .catch((err) => {
-    //   setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
-    // });
   };
 
   const unactiveIntegration = (): Promise<boolean> => {
@@ -102,7 +100,7 @@ const TestConnection = (props) => {
       const job = await pushTestOrder();
       console.log("push test job", job);
       setLoading(false);
-      if (job) setSuccessToastText("Order sent succefully");
+      if (job) setSuccessToastText("Order sent successfully");
     } catch (err) {
       setLoading(false);
       setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
@@ -118,7 +116,7 @@ const TestConnection = (props) => {
       if (!success) setErrorToastText("Server error");
       if (success) {
         setSuccessToast("DeliveryMagnet Integration unactivated");
-        adminCtx.onIntegrationChange(false);
+        integrationCtx.onIntegrationChange(false);
       }
     } catch (err) {
       setLoading(false);

@@ -4,18 +4,16 @@ import { JobOrder, ShopifyGraphQLOrder } from "./orders.model";
 import { WhMode } from "./webhooks.model";
 
 export interface AdminContextType {
-  mode: WhMode;
-  onModeSelected: (option: string, checked: boolean) => void;
-  domain: string;
-  onDomainChange: (d: string) => void;
+  // domain: string;
+  // onDomainChange: (d: string) => void;
   jobOrders: JobOrder[];
   onOneJobOrderChange: (j: JobOrder) => void;
   onJobOrdersChange: (j: JobOrder[]) => void;
   onJobOrderPush: (j: RmJob) => void;
-  isIntegrated: boolean;
-  onIntegrationChange: (value: boolean) => void;
-  defaultServiceDuration: number;
-  onDefaultServiceDurationChange: (value: number) => void;
+  // isIntegrated: boolean;
+  // onIntegrationChange: (value: boolean) => void;
+  // defaultServiceDuration: number;
+  // onDefaultServiceDurationChange: (value: number) => void;
   pageInfo: PageInfo;
   onPageInfoChange: (value: PageInfo) => void;
   refreshDate: string;
@@ -26,4 +24,15 @@ export interface AdminContextType {
   onSetSelectedDeliveryType: (value: string[]) => void;
   newJobsCount: number;
   onSetNewJobsCount: (value: number) => void;
+}
+
+export interface IntegrationContextType {
+  domain: string;
+  onDomainChange: (d: string) => void;
+  isIntegrated: boolean;
+  onIntegrationChange: (value: boolean) => void;
+  defaultServiceDuration: number;
+  onDefaultServiceDurationChange: (value: number) => void;
+  language: string;
+  onSetLanguage: () => void;
 }

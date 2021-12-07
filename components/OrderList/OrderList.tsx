@@ -42,6 +42,7 @@ import useSuccessToast from "../../hooks/SuccessToast/SuccessToast";
 import { en } from "../utils/localMapping";
 import SkeletonLoader from "../Skeleton/SkeletonLoader";
 import { formatOrder, getStatusAction } from "../utils/orderUtils";
+import IntegrationContext from "../../store/integration-context";
 
 // const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
 
@@ -52,6 +53,7 @@ const OrderList: React.FC = (props) => {
 
   // const [domain, setDomain] = useState('flo domain');
   const adminCtx = useContext(AdminContext);
+  const integrationCtx = useContext(IntegrationContext);
   const router = useRouter();
   // displayErrorToast is a jsx element, when setErrorToastText has non empty text, toast appears.
   const { displayErrorToast, setErrorToastText } = useErrorToast(5000); //5sec toast display duration
@@ -67,7 +69,7 @@ const OrderList: React.FC = (props) => {
     });
   // inform on loading stage: requesting data on shopify or RM
   const [loadingMessage, setLoadingMessage] = useState<string>("");
-  let pageInfo: PageInfo = null;
+  let pageInfo: PageInfo = null; // use for cursor-based pagination, contains hasNextPage:bool, hasPreviousPage:bool
 
   useEffect(() => {
     console.log("useEffect OrderList");
@@ -83,7 +85,7 @@ const OrderList: React.FC = (props) => {
       .then((domain) => {
         console.log("domain", domain.data.shop.myshopifyDomain);
         if (domain?.data?.shop?.myshopifyDomain) {
-          adminCtx.onDomainChange(domain.data.shop.myshopifyDomain);
+          integrationCtx.onDomainChange(domain.data.shop.myshopifyDomain);
           // once we have domain, run JobOrders that will fetch shopify orders then associated jobs from RM
           fetchJobOrders([...adminCtx.selectedDeliveryType]);
         }
@@ -143,32 +145,13 @@ const OrderList: React.FC = (props) => {
       filterList.includes("shipping")
     ) {
       adminCtx.onSetOrdersTitle("Local Delivery & Shipping Orders");
+      // below deliveryTypeQuery will be set as graphql filter in query
       deliveryTypeQuery += "delivery_method:local OR delivery_method:shipping";
     } else {
       deliveryTypeQuery += "delivery_method:local";
     }
     return deliveryTypeQuery;
   };
-
-  // const formatOrder = (or: ShopifyGraphQLOrder) => {
-  //   or.id = or.id.replace("gid://shopify/Order/", "");
-  //   or.createdAt = new Date(or.createdAt)
-  //     .toLocaleString("en-GB")
-  //     .replace(/(:\d{2}| [AP]M)$/, "");
-  //   or["customer"]["id"] = or?.customer?.id
-  //     ? or.customer.id.replace("gid://shopify/Customer/", "")
-  //     : "";
-  //   if (or?.lineItems?.edges?.length > 0) {
-  //     console.log("in condition1");
-  //     or.lineItems.edges.forEach((li) => {
-  //       li.node.fulfillmentService.location.id =
-  //         li?.node?.fulfillmentService?.location?.id.replace(
-  //           "gid://shopify/Location/",
-  //           ""
-  //         ) ?? "";
-  //     });
-  //   }
-  // };
 
   const fetchOneShopifyOrder = (orderId: string): Promise<JobOrder> => {
     console.log("getOneShopifyOrder", orderId);
@@ -243,36 +226,10 @@ const OrderList: React.FC = (props) => {
         // note that this operation in map iterator above give us 'Unknow Date', below is the workaround
         ordersList.forEach((o) => {
           formatOrder(o);
-          // o.id.replace("gid://shopify/Order/", "");
-          // o.createdAt = new Date(o.createdAt)
-          //   .toLocaleString("en-GB")
-          //   .replace(/(:\d{2}| [AP]M)$/, "");
-          // o["customer"]["id"] = o?.customer?.id
-          //   ? o.customer.id.replace("gid://shopify/Customer/", "")
-          //   : "";
-          // if (o?.lineItems?.edges?.length > 0) {
-          //   console.log("in condition1");
-          //   o.lineItems.edges.forEach((li) => {
-          //     console.log(
-          //       "in condition2",
-          //       li?.node?.fulfillmentService?.location?.id
-          //     );
-          //     li.node.fulfillmentService.location.id =
-          //       li?.node?.fulfillmentService?.location?.id.replace(
-          //         "gid://shopify/Location/",
-          //         ""
-          //       ) ?? "";
-          //     console.log(
-          //       "in condition3",
-          //       li?.node?.fulfillmentService?.location?.id
-          //     );
-          // });
-          // }
         });
         return ordersList;
       })
       .catch((err) => {
-        //  return []
         console.log("queryShopifyOrders error", err);
         throw "Error fetching Shopify Orders";
       });
@@ -281,7 +238,7 @@ const OrderList: React.FC = (props) => {
   const queryRmOrders = (
     ordersList: ShopifyGraphQLOrder[]
   ): Promise<JobOrder[]> => {
-    // fetch RM jobs list then bind it with Shopify Orders, binding based on index matching
+    // fetch RouteMagnet jobs list then bind it with Shopify Orders, binding based on index matching
     console.log("queryRmOrders", ordersList);
 
     ordersList = ordersList.map((o) => {
@@ -333,10 +290,10 @@ const OrderList: React.FC = (props) => {
     preventRowSelection = true;
     console.log("onPushToRM", jOrder);
     console.log("setPreventSel", true);
-    console.log("domain", adminCtx.domain);
+    console.log("domain", integrationCtx.domain);
 
     // convert order in WebHook order format, RM is expecting this format. handy as WebHook also send order in this this format.
-    const whOrder = convertGraphQlToWebHookOrder(jOrder, adminCtx.domain);
+    const whOrder = convertGraphQlToWebHookOrder(jOrder, integrationCtx.domain);
 
     axios
       .post(
@@ -344,7 +301,7 @@ const OrderList: React.FC = (props) => {
         JSON.stringify(whOrder)
       )
       .then((response) => {
-        // if error, returned Object has property error. check its presence
+        // if error, returned Object conatins property error. check its presence
         if (response.error || !response.data) {
           console.log(response.error);
           setErrorToastText(response.error);
@@ -363,7 +320,7 @@ const OrderList: React.FC = (props) => {
     console.log("onFulfillOneOrder1", o);
     preventRowSelection = true;
     const orderId = o.id;
-    // use REST api to fulfill an order, send request to our NextJS server, the our server will request Shopify
+    // use REST api to fulfill an order, send request to our NextJS server, then our server will request Shopify
     axios
       .post("/api/fulfillment", {
         action: "create",
@@ -379,7 +336,6 @@ const OrderList: React.FC = (props) => {
         if (result.success) {
           fetchOneShopifyOrder("gid://shopify/Order/" + orderId).then(
             (order) => {
-              console.log("flo2", order);
               adminCtx.onOneJobOrderChange(order);
             }
           );
@@ -411,8 +367,6 @@ const OrderList: React.FC = (props) => {
       };
     });
 
-    //  openOrderDetails(selectedOrderId, preventSel);
-
     console.log("preventRowSelection", preventRowSelection);
     // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
     // this flag allows us to handle those 2 scenario: row selection click and Action button click
@@ -437,8 +391,6 @@ const OrderList: React.FC = (props) => {
           order={o}
           onPushOrder={onPushToRM}
           onFulfillOrder={onFulfillOneOrder}
-          isManualMode={adminCtx.mode.manual}
-          domain={adminCtx.domain} //domain without https:// prefix
           selectedResources={selectedResources.selection}
         />
       );
@@ -446,7 +398,6 @@ const OrderList: React.FC = (props) => {
   };
   // grid is a polaris index-table : https://polaris.shopify.com/components/lists-and-tables/index-table#navigation
   const IndexTableBlock = () => {
-    console.log("IndexTableBlock");
     return (
       <IndexTable
         selectable={true}
@@ -561,6 +512,16 @@ const OrderList: React.FC = (props) => {
 
             {adminCtx?.jobOrders?.length > 0 && IndexTableBlock()}
 
+            {/* <OrdersPagination
+              hasPrevious={adminCtx.pageInfo.hasPreviousPage}
+              onPrevious={onPaginationPrevious}
+              hasNext={
+                adminCtx.pageInfo.hasNextPage &&
+                adminCtx.jobOrders.length ===
+                  +process.env.NEXT_PUBLIC_PAGINATION_NUM
+              }
+              onNext={onPaginationNext}
+            /> */}
             <Pagination
               hasPrevious={adminCtx.pageInfo.hasPreviousPage}
               onPrevious={onPaginationPrevious}
