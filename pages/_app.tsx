@@ -11,6 +11,7 @@ import ClientRouter from "../components/ClientRouter";
 import ApolloClient from "apollo-boost";
 import { ApolloProvider } from "react-apollo";
 import { AdminContextProvider } from "../store/admin-context";
+import { IntegrationContextProvider } from "../store/integration-context";
 const axios = require("axios");
 
 function userLoggedInFetch(app) {
@@ -36,14 +37,12 @@ function userLoggedInFetch(app) {
 }
 
 function AxiosInterceptor(pageProps) {
-  console.log("interceptor1");
   const app = useAppBridge();
-  console.log("interceptor2");
 
   axios.interceptors.request.use(function (config) {
     return getSessionToken(app) // requires an App Bridge instance
       .then((token) => {
-        console.log("interceptor3", token);
+        console.log("AxiosInterceptor", token);
         //  append your request headers with an authenticated token
         config.headers["Authorization"] = `Bearer ${token}`;
         config.headers["Content-Type"] = "application/json";
@@ -55,11 +54,10 @@ function AxiosInterceptor(pageProps) {
   return <React.Fragment>{pageProps.children}</React.Fragment>;
 }
 
-function MyProvider(pageProps) {
-  // static contextType = Context;
-  console.log("MyProvider1");
+function GraphQLProvider(pageProps) {
+  console.log("GraphQLProvider 1");
   const app = useAppBridge();
-  console.log("MyProvider2");
+  console.log("GraphQLProvider 2");
   const client = new ApolloClient({
     fetch: userLoggedInFetch(app),
     fetchOptions: {
@@ -88,13 +86,15 @@ function MyApp(props) {
       <Provider config={config}>
         <ClientRouter />
         <AppProvider i18n={translations}>
-          <MyProvider>
+          <GraphQLProvider>
             <AxiosInterceptor>
-              <AdminContextProvider>
-                <Component {...pageProps} />
-              </AdminContextProvider>
+              <IntegrationContextProvider>
+                <AdminContextProvider>
+                  <Component {...pageProps} />
+                </AdminContextProvider>
+              </IntegrationContextProvider>
             </AxiosInterceptor>
-          </MyProvider>
+          </GraphQLProvider>
         </AppProvider>
       </Provider>
     </React.Fragment>
