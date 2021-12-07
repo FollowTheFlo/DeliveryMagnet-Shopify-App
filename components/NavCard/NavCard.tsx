@@ -1,5 +1,6 @@
 import { Button, ButtonGroup, Card } from "@shopify/polaris";
 import React, { useState } from "react";
+import { translate } from "../utils/mapping";
 import styles from "./NavCard.module.css";
 
 const NavCard = (props) => {
@@ -14,7 +15,7 @@ const NavCard = (props) => {
             disabled={!props.isIntegrated}
             onClick={() => props.onClickpageSelection(0)}
           >
-            Orders
+            {translate.ORDERS[props.language]}
           </Button>
           <Button
             pressed={props.tabIndex === 3 ? true : false}
@@ -22,14 +23,15 @@ const NavCard = (props) => {
             disabled={!props.isIntegrated}
             onClick={() => props.onClickpageSelection(3)}
           >
-            Planner {props?.newJobsCount > 0 ? " +" + props.newJobsCount : ""}
+            {translate.PLANNER[props.language]}{" "}
+            {props?.newJobsCount > 0 ? " +" + props.newJobsCount : ""}
           </Button>
           <Button
             pressed={props.tabIndex === 1 ? true : false}
             disabled={!props.isIntegrated}
             onClick={() => props.onClickpageSelection(1)}
           >
-            Settings
+            {translate.SETTINGS[props.language]}
           </Button>
 
           <Button>FAQ - Support</Button>

@@ -63,9 +63,33 @@ const statusBadgeColorMapping = {
   FULLFILLED: "new",
 };
 
+const translate = {
+  ORDER: {
+    en: "Order",
+    fr: "Commande",
+  },
+  ORDERS: {
+    en: "Orders",
+    fr: "Commandes",
+  },
+  PRICE: {
+    en: "Price",
+    fr: "Prix",
+  },
+  SETTINGS: {
+    en: "Settings",
+    fr: "Configuration",
+  },
+  PLANNER: {
+    en: "Planner",
+    fr: "Planificateur",
+  },
+};
+
 export {
   statusBadgeColorMapping,
   wordsMapping,
   currencyMapping,
   paidStatusMapping,
+  translate,
 };
