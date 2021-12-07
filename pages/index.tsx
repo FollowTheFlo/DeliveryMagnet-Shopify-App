@@ -12,6 +12,7 @@ import Inscription from "../components/Inscription/Inscription";
 import axios from "axios";
 import { SuccessResponse } from "../model/responses.model";
 import AdminContext from "../store/admin-context";
+import IntegrationContext from "../store/integration-context";
 import NavCard from "../components/NavCard/NavCard";
 import Builder from "../components/Builder/Builder";
 import styles from "./index.module.css";
@@ -19,8 +20,8 @@ import styles from "./index.module.css";
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
 const Index: React.FC = (props) => {
-  const router = useRouter();
   const adminCtx = useContext(AdminContext);
+  const integrationCtx = useContext(IntegrationContext);
 
   const emptyState = !store.get("ids");
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -40,6 +41,7 @@ const Index: React.FC = (props) => {
   useEffect(() => {
     console.log("Index useEffect");
     setloading(true);
+    integrationCtx.onSetLanguage();
     // cehck the access token to see if integration with RM is setup
     async function getAccessTokenFromDBAsync() {
       try {
@@ -47,17 +49,18 @@ const Index: React.FC = (props) => {
         const result = response?.data as SuccessResponse;
         if (result?.success) {
           console.log("Integration is correct");
-          adminCtx.onIntegrationChange(true);
+          integrationCtx.onIntegrationChange(true);
         } else {
           console.log("Integration is NOT correct");
-          adminCtx.onIntegrationChange(false);
+          integrationCtx.onIntegrationChange(false);
         }
       } catch (err) {
         console.log("err", err);
       }
       setloading(false);
     }
-    if (!adminCtx.isIntegrated) {
+
+    if (!integrationCtx.isIntegrated) {
       console.log("not integrated: getAccessToken");
       getAccessTokenFromDBAsync();
     } else setloading(false);
@@ -102,16 +105,17 @@ const Index: React.FC = (props) => {
     <Page fullWidth>
       <NavCard
         tabIndex={tabIndex}
-        isIntegrated={adminCtx.isIntegrated}
+        isIntegrated={integrationCtx.isIntegrated}
         onClickpageSelection={onClickpageSelection}
         newJobsCount={adminCtx.newJobsCount}
+        language={integrationCtx.language}
       />
 
       {loading ? (
         <React.Fragment>
           <Spinner></Spinner>
         </React.Fragment>
-      ) : adminCtx.isIntegrated ? (
+      ) : integrationCtx.isIntegrated ? (
         displayTabsPage()
       ) : (
         <Inscription />
