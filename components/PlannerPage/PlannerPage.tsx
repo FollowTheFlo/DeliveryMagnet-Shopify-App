@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 
-const Builder: React.FC = (props) => {
-  useEffect(() => {
-    console.log("Builder useEffect");
-  });
+/*
+DeliveryMagnet App displayed in an Iframe
+https://app.deliverymagnet.com
+*/
+const PlannerPage: React.FC = (props) => {
   return (
     <React.Fragment>
       <iframe
@@ -16,4 +17,4 @@ const Builder: React.FC = (props) => {
   );
 };
 
-export default Builder;
+export default PlannerPage;

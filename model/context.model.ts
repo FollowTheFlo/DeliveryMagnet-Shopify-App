@@ -3,17 +3,11 @@ import { RmJob, RmJobWithStep } from "./jobs.model";
 import { JobOrder, ShopifyGraphQLOrder } from "./orders.model";
 import { WhMode } from "./webhooks.model";
 
-export interface AdminContextType {
-  // domain: string;
-  // onDomainChange: (d: string) => void;
+export interface OrdersContextType {
   jobOrders: JobOrder[];
   onOneJobOrderChange: (j: JobOrder) => void;
   onJobOrdersChange: (j: JobOrder[]) => void;
   onJobOrderPush: (j: RmJob) => void;
-  // isIntegrated: boolean;
-  // onIntegrationChange: (value: boolean) => void;
-  // defaultServiceDuration: number;
-  // onDefaultServiceDurationChange: (value: number) => void;
   pageInfo: PageInfo;
   onPageInfoChange: (value: PageInfo) => void;
   refreshDate: string;

@@ -2,7 +2,7 @@ import { Heading, Layout, Toast, Frame } from "@shopify/polaris";
 import React, { useEffect, useState, useCallback, useContext } from "react";
 import { SuccessResponse } from "../../model/responses.model";
 import axios from "axios";
-import AdminContext from "../../store/admin-context";
+import AdminContext from "../../store/orders-context";
 import { ShopifyConfig } from "../../model/config.model";
 import Inscription from "../Inscription/Inscription";
 import TestConnection from "./TestConnection/TestConnection";

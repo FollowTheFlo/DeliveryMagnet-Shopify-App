@@ -11,20 +11,19 @@ import {
   TextStyle,
 } from "@shopify/polaris";
 import axios from "axios";
-import React, { useEffect, useState, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import { SuccessResponse } from "../../model/responses.model";
-import AdminContext from "../../store/admin-context";
+import IntegrationContext from "../../store/integration-context";
 import styles from "./Inscription.module.css";
 
 const Inscription: React.FC = (props) => {
-  const [newsletter, setNewsletter] = useState(false);
   const [code, setCode] = useState("");
   const [url, setUrl] = useState(
     `${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/builder?action=register`
   );
   const { displayErrorToast, setErrorToastText } = useErrorToast();
-  const ctx = useContext(AdminContext);
+  const ctx = useContext(IntegrationContext);
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
@@ -35,8 +34,6 @@ const Inscription: React.FC = (props) => {
       console.log("Please enter code");
       return;
     }
-
-    // setCode(tempCode);
 
     console.log("handleSubmit", tempCode);
     axios

@@ -15,7 +15,7 @@ import ErrorToast from "../../../hooks/ErrorToast/ErrorToast";
 import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
-import AdminContext from "../../../store/admin-context";
+import AdminContext from "../../../store/orders-context";
 import styles from "./TestConnection.module.css";
 import IntegrationContext from "../../../store/integration-context";
 const axios = require("axios");

@@ -14,14 +14,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
   const result = await activateIntegration(code, shop);
-  // const sessionToken = req.headers.authorization.replace('Bearer ','');
 
-  // const accessToken = await getAccessTokenFromDB(sessionToken);
-  // if(!accessToken) {
-  //   res.status(200).json({success:false,message:'accesstoken value null'});
-  //   return;
-  // }
-  // console.log('accessToken response', accessToken);
   res.status(200).json(result);
   return;
 }

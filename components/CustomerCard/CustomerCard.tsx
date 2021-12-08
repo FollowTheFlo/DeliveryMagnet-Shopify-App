@@ -2,7 +2,7 @@ import { Button, Card, Form, Link, Stack, TextStyle } from "@shopify/polaris";
 import { useRouter } from "next/router";
 import React, { useContext, useState } from "react";
 import { JobOrderProps } from "../../model/input.model";
-import AdminContext from "../../store/admin-context";
+import AdminContext from "../../store/orders-context";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import styles from "./CustomerCard.module.css";

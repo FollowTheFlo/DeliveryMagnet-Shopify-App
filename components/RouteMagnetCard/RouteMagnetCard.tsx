@@ -1,36 +1,15 @@
 import React, { useContext, useState } from "react";
-import {
-  Card,
-  ResourceList,
-  Stack,
-  TextStyle,
-  Thumbnail,
-  Layout,
-  ButtonGroup,
-  Button,
-  Page,
-  Tabs,
-  TextField,
-  Heading,
-  Badge,
-  Icon,
-} from "@shopify/polaris";
+import { Card, Stack, TextStyle, Badge, Icon } from "@shopify/polaris";
 import { JobOrder } from "../../model/orders.model";
-import {
-  CircleTickMajor,
-  ArrowLeftMinor,
-  ChevronRightMinor,
-  CirclePlusOutlineMinor,
-  ChevronDownMinor,
-  ArrowDownMinor,
-} from "@shopify/polaris-icons";
-import { wordsMapping, currencyMapping } from "../utils/mapping";
+import { ChevronRightMinor, ChevronDownMinor } from "@shopify/polaris-icons";
+import { wordsMapping } from "../utils/mapping";
 import { JobOrderProps } from "../../model/input.model";
 
-interface DetailsMapping {
-  UNFULFILLED: () => void;
-  READY_FOR_DELIVERY: () => void;
-}
+/* 
+Order Status list pulled form DeliveryMagnet, 8 in total, 
+filling each status with details. eg: completion date, driver name, delivery tracking url
+current and completed status details can be expand/hidden
+*/
 
 const RouteMagnetCard = (props: JobOrderProps) => {
   const { order } = props;
@@ -46,9 +25,11 @@ const RouteMagnetCard = (props: JobOrderProps) => {
     "COMPLETED",
   ];
 
-  const index = statusList.findIndex((s) => order.statusAction.status === s);
+  const currentStatusIndex = statusList.findIndex(
+    (s) => order.statusAction.status === s
+  );
 
-  // open/close section as local state to be able to re-render on changes
+  // expand/withdraw section as local state to be able to re-render on changes
   const [openSection, setOpenSection] = useState({
     ...{
       UNFULFILLED: {
@@ -66,9 +47,6 @@ const RouteMagnetCard = (props: JobOrderProps) => {
       IN_ITINERARY_SAVED: {
         show: false,
       },
-      IN_ITINERARY_ASSIGNED: {
-        show: false,
-      },
       ITINERARY_STARTED: {
         show: false,
       },
@@ -81,8 +59,6 @@ const RouteMagnetCard = (props: JobOrderProps) => {
     },
     [order.statusAction.status]: { show: true },
   });
-
-  // setOpenSection({...openSection, [order.statusAction.status]:{show:true}})
 
   const unfulfilledDetails = (j: JobOrder, isCurrentStatus: boolean) => {
     if (isCurrentStatus) {
@@ -125,15 +101,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
               {j?.job?.addedByLabel ?? "Shopify Admin"}{" "}
             </TextStyle>
           </div>
-          <div>
-            {" "}
-            <a
-              href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/tabs/queue`}
-              target="_blank"
-            >
-              Waiting Queue
-            </a>
-          </div>
+          <div> Waiting Queue</div>
         </React.Fragment>
       );
     }
@@ -218,15 +186,6 @@ const RouteMagnetCard = (props: JobOrderProps) => {
               Tracking link sent to customer
             </a>
           </div>
-          <div>
-            {" "}
-            <a
-              href={`${process.env.NEXT_PUBLIC_RM_CLIENT_URL}/live`}
-              target="_blank"
-            >
-              Supervisor Interactive Map
-            </a>
-          </div>
         </React.Fragment>
       );
     }
@@ -296,9 +255,6 @@ const RouteMagnetCard = (props: JobOrderProps) => {
     IN_ITINERARY_SAVED: {
       action: inItinerarySavedDetails,
     },
-    // IN_ITINERARY_ASSIGNED: {
-    //   action:inItineraryAssignedDetails,
-    // },
     ITINERARY_STARTED: {
       action: inItineraryStartedDetails,
     },
@@ -325,8 +281,12 @@ const RouteMagnetCard = (props: JobOrderProps) => {
           {statusList.map((status, i) => {
             // detailsMapping[status].show = i === index ? true  : false;
             const badgeStatus =
-              i === index ? "attention" : i > index ? "new" : "success";
-            const futureStep = i <= index ? false : true;
+              i === currentStatusIndex
+                ? "attention"
+                : i > currentStatusIndex
+                ? "new"
+                : "success";
+            const futureStep = i <= currentStatusIndex ? false : true;
             return (
               <React.Fragment>
                 <div onClick={() => onSectionClicked(status)}>
@@ -353,7 +313,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
                       {openSection[status].show &&
                         detailsMapping[status].action(
                           o,
-                          i === index ? true : false
+                          i === currentStatusIndex ? true : false
                         )}
                     </Stack.Item>
                   </Stack>

@@ -1,30 +1,9 @@
 import React, { useContext } from "react";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import {
-  CircleTickMajor,
-  ArrowLeftMinor,
-  CirclePlusOutlineMinor,
-  ArrowDownMinor,
-} from "@shopify/polaris-icons";
-import {
-  Card,
-  ResourceList,
-  Stack,
-  TextStyle,
-  Thumbnail,
-  Layout,
-  ButtonGroup,
-  Button,
-  Page,
-  Tabs,
-  TextField,
-  Heading,
-  Badge,
-  Spinner,
-} from "@shopify/polaris";
+import { Layout, Page, Spinner } from "@shopify/polaris";
 
-import AdminContext from "../../store/admin-context";
+import AdminContext from "../../store/orders-context";
 import { useRouter } from "next/router";
 import {
   JobOrder,
@@ -34,7 +13,6 @@ import {
 import { Header } from "@shopify/polaris/dist/types/latest/src/components/Card/components";
 import FulfillCard from "../../components/OrderList/OrderItem/fulfill-card/FulfillCard";
 import RouteMagnetCard from "../../components/RouteMagnetCard/RouteMagnetCard";
-import fetchApi from "../../components/utils/fetchApi";
 import { RmJob, RmJobWithStep } from "../../model/jobs.model";
 import { wordsMapping } from "../../components/utils/mapping";
 import { convertGraphQlToWebHookOrder } from "../../components/utils/convertion";
@@ -44,11 +22,11 @@ import CustomerCard from "../../components/CustomerCard/CustomerCard";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import { GET_ONE_ORDER } from "../../components/utils/graphQlQueries";
 import { useApolloClient } from "react-apollo";
-import { StatusAction } from "../../model/input.model";
 import {
   formatOrder,
   getStatusAction,
 } from "../../components/utils/orderUtils";
+import IntegrationContext from "../../store/integration-context";
 
 const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
@@ -62,6 +40,7 @@ const OrderDetails: React.FC = (props) => {
   const router = useRouter();
   const orderId = router.query.orderId;
   const adminCtx = useContext(AdminContext);
+  const integrationCtx = useContext(IntegrationContext);
   const [order, setOrder] = useState<JobOrder>(null);
   const { displayErrorToast, setErrorToastText } = useErrorToast(5000);
   const [loader, setLoader] = useState<boolean>(false);
@@ -74,7 +53,7 @@ const OrderDetails: React.FC = (props) => {
   const onPushToRM = (jOrder: JobOrder) => {
     console.log("onPushToRM", jOrder);
     setLoader(true);
-    const whOrder = convertGraphQlToWebHookOrder(jOrder, adminCtx.domain);
+    const whOrder = convertGraphQlToWebHookOrder(jOrder, integrationCtx.domain);
 
     axios
       .post(

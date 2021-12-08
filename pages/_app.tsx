@@ -10,7 +10,7 @@ import translations from "@shopify/polaris/locales/en.json";
 import ClientRouter from "../components/ClientRouter";
 import ApolloClient from "apollo-boost";
 import { ApolloProvider } from "react-apollo";
-import { AdminContextProvider } from "../store/admin-context";
+import { OrdersContextProvider } from "../store/orders-context";
 import { IntegrationContextProvider } from "../store/integration-context";
 const axios = require("axios");
 
@@ -55,9 +55,8 @@ function AxiosInterceptor(pageProps) {
 }
 
 function GraphQLProvider(pageProps) {
-  console.log("GraphQLProvider 1");
+  console.log("GraphQLProvider setup");
   const app = useAppBridge();
-  console.log("GraphQLProvider 2");
   const client = new ApolloClient({
     fetch: userLoggedInFetch(app),
     fetchOptions: {
@@ -89,9 +88,9 @@ function MyApp(props) {
           <GraphQLProvider>
             <AxiosInterceptor>
               <IntegrationContextProvider>
-                <AdminContextProvider>
+                <OrdersContextProvider>
                   <Component {...pageProps} />
-                </AdminContextProvider>
+                </OrdersContextProvider>
               </IntegrationContextProvider>
             </AxiosInterceptor>
           </GraphQLProvider>

@@ -2,10 +2,8 @@ import styles from "./OrderList.module.css";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState, useCallback, useContext } from "react";
-// require("dotenv").config();
 const axios = require("axios");
-import Image from "next/image";
-import AdminContext from "../../store/admin-context";
+import OrdersContext from "../../store/orders-context";
 import { useApolloClient } from "react-apollo";
 import {
   Card,
@@ -40,11 +38,16 @@ import OrdersFilter from "./OrdersFilter/OrdersFilter";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import useSuccessToast from "../../hooks/SuccessToast/SuccessToast";
 import { en } from "../utils/localMapping";
-import SkeletonLoader from "../Skeleton/SkeletonLoader";
+import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 import { formatOrder, getStatusAction } from "../utils/orderUtils";
 import IntegrationContext from "../../store/integration-context";
 
-// const RM_SERVER_URL = process.env.NEXT_PUBLIC_RM_SERVER_URL;
+/*
+Orders list displayed in grid, by page of NEXT_PUBLIC_PAGINATION_NUM orders.
+Filter selectbox set on top with 2 types( LocalDeliver & Shipment).
+Refresh button besides Filter selectbox.
+Pagination arrows on bottom, 
+*/
 
 const OrderList: React.FC = (props) => {
   console.log("flo OrderList");
@@ -52,7 +55,7 @@ const OrderList: React.FC = (props) => {
   const client = useApolloClient();
 
   // const [domain, setDomain] = useState('flo domain');
-  const adminCtx = useContext(AdminContext);
+  const ordersCtx = useContext(OrdersContext);
   const integrationCtx = useContext(IntegrationContext);
   const router = useRouter();
   // displayErrorToast is a jsx element, when setErrorToastText has non empty text, toast appears.
@@ -74,7 +77,7 @@ const OrderList: React.FC = (props) => {
   useEffect(() => {
     console.log("useEffect OrderList");
     // don't fetch orders again if there are already loaded
-    if (adminCtx.jobOrders.length > 0) {
+    if (ordersCtx.jobOrders.length > 0) {
       console.log("dont refresh");
       return;
     }
@@ -87,7 +90,7 @@ const OrderList: React.FC = (props) => {
         if (domain?.data?.shop?.myshopifyDomain) {
           integrationCtx.onDomainChange(domain.data.shop.myshopifyDomain);
           // once we have domain, run JobOrders that will fetch shopify orders then associated jobs from RM
-          fetchJobOrders([...adminCtx.selectedDeliveryType]);
+          fetchJobOrders([...ordersCtx.selectedDeliveryType]);
         }
       })
       .catch((err) => console.log("err", err));
@@ -107,19 +110,18 @@ const OrderList: React.FC = (props) => {
       .then((data) => {
         console.log("return data", data);
         // fill context so data are avaialble accross the app
-        adminCtx.onJobOrdersChange(data);
+        ordersCtx.onJobOrdersChange(data);
         console.log("pageInfo before ctx", pageInfo);
         // pageInfo is use for cursor-based Pagination, cursor based, shopify gives us hasNextPage hasPreviousPage booleans
         // see https://www.shopify.ca/partners/blog/graphql-pagination
-        adminCtx.onPageInfoChange(pageInfo);
-        // setRefreshDate(new Date().toLocaleString());
-        adminCtx.onRefreshDateChange(new Date().toLocaleString());
+        ordersCtx.onPageInfoChange(pageInfo);
+        ordersCtx.onRefreshDateChange(new Date().toLocaleString());
         setLoadingMessage("");
       })
       .catch((errMessage) => {
         console.log("err2", errMessage);
         // when failure, fill empty orders list
-        adminCtx.onJobOrdersChange([]);
+        ordersCtx.onJobOrdersChange([]);
         setLoadingMessage(errMessage);
         setErrorToastText(errMessage);
       });
@@ -127,24 +129,24 @@ const OrderList: React.FC = (props) => {
 
   const buildFilterQuery = (filterList: string[]): string => {
     if (!filterList) {
-      adminCtx.onSetOrdersTitle("Local Delivery Orders");
+      ordersCtx.onSetOrdersTitle("Local Delivery Orders");
       return "delivery_method:local";
     }
     let deliveryTypeQuery = "";
     if (filterList.includes("local") && !filterList.includes("shipping")) {
-      adminCtx.onSetOrdersTitle("Local Delivery Orders");
+      ordersCtx.onSetOrdersTitle("Local Delivery Orders");
       deliveryTypeQuery += "delivery_method:local";
     } else if (
       !filterList.includes("local") &&
       filterList.includes("shipping")
     ) {
-      adminCtx.onSetOrdersTitle("Shipping Orders");
+      ordersCtx.onSetOrdersTitle("Shipping Orders");
       deliveryTypeQuery += "delivery_method:shipping";
     } else if (
       filterList.includes("local") &&
       filterList.includes("shipping")
     ) {
-      adminCtx.onSetOrdersTitle("Local Delivery & Shipping Orders");
+      ordersCtx.onSetOrdersTitle("Local Delivery & Shipping Orders");
       // below deliveryTypeQuery will be set as graphql filter in query
       deliveryTypeQuery += "delivery_method:local OR delivery_method:shipping";
     } else {
@@ -239,18 +241,11 @@ const OrderList: React.FC = (props) => {
     ordersList: ShopifyGraphQLOrder[]
   ): Promise<JobOrder[]> => {
     // fetch RouteMagnet jobs list then bind it with Shopify Orders, binding based on index matching
-    console.log("queryRmOrders", ordersList);
-
-    ordersList = ordersList.map((o) => {
-      // format id, we remove prefix 'gid://shopify/Order/' to get the unique id, should be already in correct format
-      return { ...o, id: o.id.replace("gid://shopify/Order/", "") };
-    });
-
     // list of shopify order ids, will be use to retrieve associated RM jobs.
     const orderIDsList = ordersList.map((o) => o.id);
     // ordersList is string[] type
     console.log("queryRmOrders orderIDsList", orderIDsList);
-    const obj = {
+    const shopOrderIDsObj = {
       shop: "shop",
       orderIdsList: orderIDsList,
     };
@@ -258,7 +253,7 @@ const OrderList: React.FC = (props) => {
     return axios
       .post(
         `${process.env.NEXT_PUBLIC_RM_SERVER_URL}/shopify/orderslist/status`,
-        JSON.stringify(obj)
+        JSON.stringify(shopOrderIDsObj)
       )
       .then((response) => {
         const jobs = response?.data as RmJobWithStep[];
@@ -309,7 +304,7 @@ const OrderList: React.FC = (props) => {
         }
         const job = response.data as RmJob;
         console.log("push job", job);
-        adminCtx.onJobOrderPush({ ...job });
+        ordersCtx.onJobOrderPush({ ...job });
       })
       .catch((err) => {
         setErrorToastText("" + (en[err?.response?.data?.message] ?? err));
@@ -336,10 +331,9 @@ const OrderList: React.FC = (props) => {
         if (result.success) {
           fetchOneShopifyOrder("gid://shopify/Order/" + orderId).then(
             (order) => {
-              adminCtx.onOneJobOrderChange(order);
+              ordersCtx.onOneJobOrderChange(order);
             }
           );
-          //  onRefresh();
         }
       })
       .catch((err) => {
@@ -402,7 +396,7 @@ const OrderList: React.FC = (props) => {
       <IndexTable
         selectable={true}
         resourceName={{ singular: "Order", plural: "Orders" }}
-        itemCount={adminCtx.jobOrders.length}
+        itemCount={ordersCtx.jobOrders.length}
         selectedItemsCount={0}
         loading={loadingMessage ? true : false}
         onSelectionChange={onSelectionChangeHandler}
@@ -418,7 +412,7 @@ const OrderList: React.FC = (props) => {
           { title: "items" },
         ]}
       >
-        {jobOrderRows(adminCtx.jobOrders.slice())}
+        {jobOrderRows(ordersCtx.jobOrders.slice())}
       </IndexTable>
     );
   };
@@ -426,7 +420,7 @@ const OrderList: React.FC = (props) => {
   const onPaginationPrevious = () => {
     // pagination Previous button clicked, get first cursor of jobOrder list as we seek the page before it
     console.log("onPaginationPrevious");
-    const firstCursor = adminCtx?.jobOrders[0]?.cursor ?? null;
+    const firstCursor = ordersCtx?.jobOrders[0]?.cursor ?? null;
     if (!firstCursor) {
       console.log("firstCursor is null");
       return;
@@ -434,7 +428,7 @@ const OrderList: React.FC = (props) => {
 
     console.log("firstCursor", firstCursor);
 
-    fetchJobOrders([...adminCtx.selectedDeliveryType], {
+    fetchJobOrders([...ordersCtx.selectedDeliveryType], {
       action: "before",
       value: firstCursor,
     });
@@ -442,13 +436,13 @@ const OrderList: React.FC = (props) => {
   const onPaginationNext = () => {
     // pagination Next button clicked, get last cursor of jobOrder list as we seek the page after it
     console.log("onPaginationNext");
-    const lastIndex = adminCtx?.jobOrders?.length - 1 ?? null;
+    const lastIndex = ordersCtx?.jobOrders?.length - 1 ?? null;
     if (!lastIndex) {
       console.log("lastIndex is null");
       return;
     }
     const lastCursor =
-      adminCtx?.jobOrders[adminCtx.jobOrders.length - 1]?.cursor ?? null;
+      ordersCtx?.jobOrders[ordersCtx.jobOrders.length - 1]?.cursor ?? null;
     if (!lastCursor) {
       console.log("lastCursor is null");
       return;
@@ -456,7 +450,7 @@ const OrderList: React.FC = (props) => {
 
     console.log("lastCursor", lastCursor);
 
-    fetchJobOrders([...adminCtx.selectedDeliveryType], {
+    fetchJobOrders([...ordersCtx.selectedDeliveryType], {
       action: "after",
       value: lastCursor,
     });
@@ -468,7 +462,7 @@ const OrderList: React.FC = (props) => {
       console.log("empty choice");
       return;
     }
-    adminCtx.onSetSelectedDeliveryType([...choicesList]);
+    ordersCtx.onSetSelectedDeliveryType([...choicesList]);
     onRefresh([...choicesList]);
   }, []);
 
@@ -478,13 +472,13 @@ const OrderList: React.FC = (props) => {
       <br />
       <Stack>
         <Stack.Item fill>
-          <Heading element="h1">{adminCtx.ordersTitle}</Heading>
+          <Heading element="h1">{ordersCtx.ordersTitle}</Heading>
         </Stack.Item>
         <Stack.Item fill>
           <div style={{ textAlign: "end" }}>
             {!loadingMessage && (
               <span className={styles.refreshMessage}>
-                Last refresh at {adminCtx.refreshDate}
+                Last refresh at {ordersCtx.refreshDate}
               </span>
             )}
             {loadingMessage && (
@@ -498,36 +492,26 @@ const OrderList: React.FC = (props) => {
         </Stack.Item>
       </Stack>
       <br />
-      {!loadingMessage || adminCtx?.jobOrders?.length > 0 ? (
+      {!loadingMessage || ordersCtx?.jobOrders?.length > 0 ? (
         <Card>
           <Card.Section>
             <Stack alignment="center" distribution="center">
               <Stack.Item>
                 <OrdersFilter
-                  selectedDeliveryType={adminCtx.selectedDeliveryType}
+                  selectedDeliveryType={ordersCtx.selectedDeliveryType}
                   handleDeliveryTypeChange={handleDeliveryTypeChange}
                 />
               </Stack.Item>
             </Stack>
 
-            {adminCtx?.jobOrders?.length > 0 && IndexTableBlock()}
+            {ordersCtx?.jobOrders?.length > 0 && IndexTableBlock()}
 
-            {/* <OrdersPagination
-              hasPrevious={adminCtx.pageInfo.hasPreviousPage}
-              onPrevious={onPaginationPrevious}
-              hasNext={
-                adminCtx.pageInfo.hasNextPage &&
-                adminCtx.jobOrders.length ===
-                  +process.env.NEXT_PUBLIC_PAGINATION_NUM
-              }
-              onNext={onPaginationNext}
-            /> */}
             <Pagination
-              hasPrevious={adminCtx.pageInfo.hasPreviousPage}
+              hasPrevious={ordersCtx.pageInfo.hasPreviousPage}
               onPrevious={onPaginationPrevious}
               hasNext={
-                adminCtx.pageInfo.hasNextPage &&
-                adminCtx.jobOrders.length ===
+                ordersCtx.pageInfo.hasNextPage &&
+                ordersCtx.jobOrders.length ===
                   +process.env.NEXT_PUBLIC_PAGINATION_NUM
               }
               onNext={onPaginationNext}

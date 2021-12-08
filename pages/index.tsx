@@ -1,42 +1,25 @@
 import React, { useContext } from "react";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import { Button, Page, Spinner } from "@shopify/polaris";
-import { ResourcePicker, TitleBar } from "@shopify/app-bridge-react";
+
+import { Page, Spinner } from "@shopify/polaris";
 import store from "store-js";
 import { useState, useEffect, useCallback } from "react";
 import OrderList from "../components/OrderList/OrderList";
 import Settings from "../components/Settings/Settings";
-import { Card, Tabs } from "@shopify/polaris";
 import Inscription from "../components/Inscription/Inscription";
 import axios from "axios";
 import { SuccessResponse } from "../model/responses.model";
-import AdminContext from "../store/admin-context";
+import AdminContext from "../store/orders-context";
 import IntegrationContext from "../store/integration-context";
 import NavCard from "../components/NavCard/NavCard";
-import Builder from "../components/Builder/Builder";
+import PlannerPage from "../components/PlannerPage/PlannerPage";
 import styles from "./index.module.css";
-
-const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
 
 const Index: React.FC = (props) => {
   const adminCtx = useContext(AdminContext);
   const integrationCtx = useContext(IntegrationContext);
 
-  const emptyState = !store.get("ids");
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [loading, setloading] = useState<boolean>(true);
-
-  const tabs = [
-    {
-      id: "orders",
-      content: "Orders",
-    },
-    {
-      id: "config",
-      content: "Settings",
-    },
-  ];
 
   useEffect(() => {
     console.log("Index useEffect");
@@ -65,11 +48,6 @@ const Index: React.FC = (props) => {
       getAccessTokenFromDBAsync();
     } else setloading(false);
   }, []);
-
-  const handleTabChange = useCallback(
-    (selectedTabIndex: number) => setTabIndex(selectedTabIndex),
-    []
-  );
 
   const onClickpageSelection = useCallback((page: number) => {
     setTabIndex(page);
@@ -121,7 +99,7 @@ const Index: React.FC = (props) => {
         <Inscription />
       )}
       <div className={tabIndex === 3 ? styles.show : styles.hide}>
-        <Builder />
+        <PlannerPage />
       </div>
     </Page>
   );

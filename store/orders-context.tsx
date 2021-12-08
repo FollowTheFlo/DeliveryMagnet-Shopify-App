@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { AdminContextType } from "../model/context.model";
+import { OrdersContextType } from "../model/context.model";
 import { PageInfo } from "../model/input.model";
-import { RmJob, RmJobWithStep } from "../model/jobs.model";
-import { JobOrder, ShopifyGraphQLOrder } from "../model/orders.model";
+import { RmJob } from "../model/jobs.model";
+import { JobOrder } from "../model/orders.model";
 import { WhMode } from "../model/webhooks.model";
 
-const AdminContext = React.createContext({
-  // domain: "",
-  // onDomainChange: (value) => {},
+const OrdersContext = React.createContext({
   jobOrders: [],
   onJobOrdersChange: (jOrders) => {},
   onOneJobOrderChange: (jOrder) => {},
   onJobOrderPush: (rMOrderWithStep) => {},
-  // isIntegrated: false,
-  // onIntegrationChange: (value) => {},
-  // defaultServiceDuration: 0,
-  // onDefaultServiceDurationChange: (value) => {},
   pageInfo: null,
   onPageInfoChange: (value) => {},
   refreshDate: "",
   onRefreshDateChange: (value) => {},
   newJobsCount: 0,
   onSetNewJobsCount: (value) => {},
-} as AdminContextType);
+} as OrdersContextType);
 
-export const AdminContextProvider = (props) => {
+export const OrdersContextProvider = (props) => {
   // WebHooks about automatic Push: initial state with all unchecked options
   // when first visit on Settings, we will fetch the active option from Shopify
   const [mode, setMode] = useState<WhMode>({
@@ -137,7 +131,7 @@ export const AdminContextProvider = (props) => {
   };
 
   return (
-    <AdminContext.Provider
+    <OrdersContext.Provider
       value={{
         // domain: domain,
         //  onDomainChange: domainHandler,
@@ -162,8 +156,8 @@ export const AdminContextProvider = (props) => {
       }}
     >
       {props.children}
-    </AdminContext.Provider>
+    </OrdersContext.Provider>
   );
 };
 
-export default AdminContext;
+export default OrdersContext;

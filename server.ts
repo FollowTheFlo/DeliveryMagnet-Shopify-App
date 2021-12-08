@@ -11,7 +11,7 @@ const https = require("https");
 const { default: createShopifyAuth } = require("@shopify/koa-shopify-auth");
 const { verifyRequest } = require("@shopify/koa-shopify-auth");
 const { default: Shopify, ApiVersion } = require("@shopify/shopify-api");
-const getSubscriptionUrl = require("./server/getSubscriptionUrl");
+// const getSubscriptionUrl = require("./server/getSubscriptionUrl");
 const Router = require("koa-router");
 const jwt = require("jsonwebtoken");
 
@@ -85,11 +85,11 @@ app.prepare().then(() => {
   const server = new Koa();
   const router = new Router();
   server.keys = [Shopify.Context.API_SECRET_KEY];
-  console.log("flo beforeAuth");
+  console.log("server beforeAuth");
   server.use(
     createShopifyAuth({
       async afterAuth(ctx) {
-        console.log("flo afterAuth");
+        console.log("server afterAuth");
         const { shop, scope, accessToken } = ctx.state.shopify;
         console.log("accessToken", accessToken);
         console.log("shop", shop);

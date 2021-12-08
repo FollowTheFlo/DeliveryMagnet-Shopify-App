@@ -1,7 +1,15 @@
 import { Button, ChoiceList, FormLayout, Popover } from "@shopify/polaris";
 import React, { useCallback, useContext, useState } from "react";
 
-const OrdersFilter = (props) => {
+/*
+Orders filter popover contains 2 choices: LocalDelivery & Shipment.
+*/
+
+type OrdersFilterProps = {
+  selectedDeliveryType: string[];
+  handleDeliveryTypeChange: (choicesList: string[]) => void;
+};
+const OrdersFilter = (props: OrdersFilterProps) => {
   const [popoverActive, setPopoverActive] = useState(false);
 
   const togglePopoverActive = useCallback(
