@@ -1,19 +1,13 @@
 import React, { useContext } from "react";
-import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Layout, Page, Spinner } from "@shopify/polaris";
 
-import AdminContext from "../../store/orders-context";
+import OrdersContext from "../../store/orders-context";
 import { useRouter } from "next/router";
-import {
-  JobOrder,
-  ShopifyGraphQLOrder,
-  WHOrder,
-} from "../../model/orders.model";
-import { Header } from "@shopify/polaris/dist/types/latest/src/components/Card/components";
+import { JobOrder, ShopifyGraphQLOrder } from "../../model/orders.model";
 import FulfillCard from "../../components/OrderList/OrderItem/fulfill-card/FulfillCard";
 import RouteMagnetCard from "../../components/RouteMagnetCard/RouteMagnetCard";
-import { RmJob, RmJobWithStep } from "../../model/jobs.model";
+import { RmJob } from "../../model/jobs.model";
 import { wordsMapping } from "../../components/utils/mapping";
 import { convertGraphQlToWebHookOrder } from "../../components/utils/convertion";
 import { SuccessResponse } from "../../model/responses.model";
@@ -28,25 +22,21 @@ import {
 } from "../../components/utils/orderUtils";
 import IntegrationContext from "../../store/integration-context";
 
-const img = "https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg";
-
+/* Order details page 
+param OrderId passed via router
+*/
 const OrderDetails: React.FC = (props) => {
-  const fulfillMapping = {
-    FULFILLED: "Fulfilled",
-    UNFULFILLED: "Unfulfilled",
-  };
-
   const client = useApolloClient();
   const router = useRouter();
   const orderId = router.query.orderId;
-  const adminCtx = useContext(AdminContext);
+  const ordersCtx = useContext(OrdersContext);
   const integrationCtx = useContext(IntegrationContext);
   const [order, setOrder] = useState<JobOrder>(null);
   const { displayErrorToast, setErrorToastText } = useErrorToast(5000);
   const [loader, setLoader] = useState<boolean>(false);
 
   useEffect(() => {
-    const o = adminCtx.jobOrders.find((o) => o.id === orderId);
+    const o = ordersCtx.jobOrders.find((o) => o.id === orderId);
     setOrder(o);
   }, []);
 
@@ -70,7 +60,7 @@ const OrderDetails: React.FC = (props) => {
           return;
         }
         const job = response.data as RmJob;
-        adminCtx.onJobOrderPush({ ...job });
+        ordersCtx.onJobOrderPush({ ...job });
 
         //  const o = adminCtx.jobOrders.find(o => o.id === orderId);
         // console.log('just pushed', o);
@@ -100,17 +90,15 @@ const OrderDetails: React.FC = (props) => {
       })
       .then((response) => {
         const result = response?.data as SuccessResponse;
-
-        console.log("response webhooks api", result);
         console.log("response fulfillment api", response);
 
-        //
+        // successfully fulfilled, now fetch order from shopify to include its last updates
         if (result.success) {
           fetchOneShopifyOrder("gid://shopify/Order/" + orderId).then(
             (order) => {
               setLoader(false);
               console.log("flo2", order);
-              adminCtx.onOneJobOrderChange(order);
+              ordersCtx.onOneJobOrderChange(order);
               setOrder({ ...order });
             }
           );
@@ -130,7 +118,6 @@ const OrderDetails: React.FC = (props) => {
     return client
       .query({ query: gqlQuery, fetchPolicy: "no-cache" })
       .then((data) => {
-        console.log("getOneShopifyOrder", orderId);
         if (!data?.data?.order) return null;
 
         const or = data.data.order as ShopifyGraphQLOrder;
