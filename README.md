@@ -11,7 +11,7 @@
  </tr>
  </table>
 <h2>Fulfill & Push Shopify orders to DeliveryMagnet</h2>
-<img height='700px' c src='https://florentletendre.com/images/dm_push_gif.gif.png'  />
+<img height='700px' c src='https://florentletendre.com/images/dm_push_gif.gif'  />
 <p>Client Architecture</p>
 <img  src='https://florentletendre.com/images/shopify_context.png' />
 <p>Data Structure</p>
