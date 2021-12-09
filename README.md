@@ -9,9 +9,17 @@
   <td><img height='350px'   src='https://florentletendre.com/images/rm_admin1.png'  /> </td>
    <td><img height='350px' src='https://florentletendre.com/images/rm_admin2.png'  /></td>
  </tr>
+ 
  </table>
-<h2>Fulfill & Push Shopify orders to DeliveryMagnet</h2>
-<img height='700px' c src='https://florentletendre.com/images/dm_push_gif.gif'  />
+
+<p>Connect Shopify App with DeliveryMagnet
+<a href='https://florentletendre.com/videos/dm_register_with_shopify.mp4' target='_blank'>See video</a>
+ </p>
+<p>Fulfill & Push Shopify orders to DeliveryMagnet <a href='https://florentletendre.com/images/dm_push_gif.gif' target='_blank'>See video</a></p>
+
+ 
+
+
 <p>Client Architecture</p>
 <img  src='https://florentletendre.com/images/shopify_context.png' />
 <p>Data Structure</p>
