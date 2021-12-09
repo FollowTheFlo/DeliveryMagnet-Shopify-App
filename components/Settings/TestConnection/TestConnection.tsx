@@ -15,7 +15,6 @@ import ErrorToast from "../../../hooks/ErrorToast/ErrorToast";
 import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
-import AdminContext from "../../../store/orders-context";
 import styles from "./TestConnection.module.css";
 import IntegrationContext from "../../../store/integration-context";
 const axios = require("axios");
@@ -23,11 +22,9 @@ const axios = require("axios");
 const TestConnection = (props) => {
   const [company, setCompany] = useState<Company>(null);
   const [successToast, setSuccessToast] = useState("");
-  const [errorToast, setErrorToast] = useState("");
   const [loading, setLoading] = useState(false);
   const { displayErrorToast, setErrorToastText } = useErrorToast();
   const { displaySuccessToast, setSuccessToastText } = useSuccessToast();
-  // const adminCtx = useContext(AdminContext);
   const integrationCtx = useContext(IntegrationContext);
 
   const fetchCompany = (): Promise<Company> => {
