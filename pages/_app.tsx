@@ -70,7 +70,6 @@ function GraphQLProvider(pageProps) {
 function MyApp(props) {
   const { Component, pageProps, shopOrigin } = props;
 
-  console.log("API_KEY", process.env.NEXT_PUBLIC_SHOPIFY_API_KEY);
   const config = {
     apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY,
     shopOrigin,

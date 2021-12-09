@@ -468,7 +468,6 @@ const OrderList: React.FC = (props) => {
 
   return (
     <React.Fragment>
-      {/* <Image src="/me.png" alt="me" width={100} height={100} />          */}
       <br />
       <Stack>
         <Stack.Item fill>
@@ -503,9 +502,7 @@ const OrderList: React.FC = (props) => {
                 />
               </Stack.Item>
             </Stack>
-
             {ordersCtx?.jobOrders?.length > 0 && IndexTableBlock()}
-
             <Pagination
               hasPrevious={ordersCtx.pageInfo.hasPreviousPage}
               onPrevious={onPaginationPrevious}
