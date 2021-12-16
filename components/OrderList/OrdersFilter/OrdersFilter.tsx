@@ -1,5 +1,5 @@
 import { Button, ChoiceList, FormLayout, Popover } from "@shopify/polaris";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 /*
 Orders filter popover contains 2 choices: LocalDelivery & Shipment.
@@ -9,6 +9,20 @@ type OrdersFilterProps = {
   selectedDeliveryType: string[];
   handleDeliveryTypeChange: (choicesList: string[]) => void;
 };
+
+function deepCompareProps(prevProps: any, nextProps: any) {
+  const list = prevProps.selectedDeliveryType as string[];
+  const isSame =
+    prevProps?.selectedDeliveryType?.length ===
+      nextProps?.selectedDeliveryType?.length &&
+    list.every((item, index) => item === nextProps.selectedDeliveryType[index])
+      ? true
+      : false;
+
+  console.log("OrdersFilter isDeepCompareSame", isSame);
+  return isSame;
+}
+
 const OrdersFilter = (props: OrdersFilterProps) => {
   const [popoverActive, setPopoverActive] = useState(false);
 
@@ -48,4 +62,4 @@ const OrdersFilter = (props: OrdersFilterProps) => {
   );
 };
 
-export default OrdersFilter;
+export default React.memo(OrdersFilter, deepCompareProps);
