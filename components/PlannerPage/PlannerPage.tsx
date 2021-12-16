@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 DeliveryMagnet App displayed in an Iframe
 https://app.deliverymagnet.com
 */
-const PlannerPage: React.FC = (props) => {
+const PlannerPage: React.FC = () => {
   return (
     <React.Fragment>
       <iframe
@@ -17,4 +17,4 @@ const PlannerPage: React.FC = (props) => {
   );
 };
 
-export default PlannerPage;
+export default React.memo(PlannerPage);
