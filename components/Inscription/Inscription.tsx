@@ -1,17 +1,14 @@
 import {
   Button,
   Card,
-  Checkbox,
-  DescriptionList,
   Form,
   FormLayout,
   Layout,
   List,
   TextField,
-  TextStyle,
 } from "@shopify/polaris";
 import axios from "axios";
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext, useEffect } from "react";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
 import { SuccessResponse } from "../../model/responses.model";
 import IntegrationContext from "../../store/integration-context";
@@ -146,4 +143,4 @@ const Inscription: React.FC = (props) => {
   );
 };
 
-export default Inscription;
+export default React.memo(Inscription);
