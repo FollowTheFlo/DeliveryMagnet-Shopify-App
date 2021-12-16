@@ -1,22 +1,20 @@
 import { Heading, Layout, Toast, Frame } from "@shopify/polaris";
-import React, { useEffect, useState, useCallback, useContext } from "react";
-import { SuccessResponse } from "../../model/responses.model";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import AdminContext from "../../store/orders-context";
 import { ShopifyConfig } from "../../model/config.model";
 import Inscription from "../Inscription/Inscription";
 import TestConnection from "./TestConnection/TestConnection";
 import IntegrationContext from "../../store/integration-context";
 
 const Settings: React.FC = (props) => {
-  // const adminCtx = useContext(AdminContext);
   const integrationCtx = useContext(IntegrationContext);
   const [successSaved, setSuccessSaved] = useState(false);
   const [configLoading, setConfigLoading] = useState(false);
+
   useEffect(() => {
-    // fetch config vlaues form DeliveryMagnet server,
+    // fetch config values from DeliveryMagnet server:
     // shop,teamId,active,service,accessToken,code,domain,exp
-    // avoid to run it everytime, 0 is initial state, so will rune only once
+    // avoid to run it everytime, 0 is initial state, so will run only once
     if (integrationCtx.defaultServiceDuration === 0) {
       console.log("in useEffect service duration");
       fetchConfigFromRM()
@@ -38,7 +36,6 @@ const Settings: React.FC = (props) => {
         console.log("config", config);
         if (config?.service) {
           // sec to min
-          //  setServiceDuration(config.service / 60);
           integrationCtx.onDefaultServiceDurationChange(config.service / 60);
           return true;
         }
@@ -82,4 +79,4 @@ const Settings: React.FC = (props) => {
   );
 };
 
-export default Settings;
+export default React.memo(Settings);
