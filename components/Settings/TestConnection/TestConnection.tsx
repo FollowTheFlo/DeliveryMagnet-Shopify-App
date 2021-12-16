@@ -1,17 +1,8 @@
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  Frame,
-  Heading,
-  Spinner,
-  Toast,
-} from "@shopify/polaris";
+import { Button, ButtonGroup, Card, Heading } from "@shopify/polaris";
 import React, { useContext, useState } from "react";
 import { Company } from "../../../model/company.model";
 import { RmJob } from "../../../model/jobs.model";
 import useErrorToast from "../../../hooks/ErrorToast/ErrorToast";
-import ErrorToast from "../../../hooks/ErrorToast/ErrorToast";
 import { en } from "../../utils/localMapping";
 import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
