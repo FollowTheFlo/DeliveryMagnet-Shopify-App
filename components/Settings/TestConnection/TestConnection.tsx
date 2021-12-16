@@ -17,6 +17,7 @@ import { TestOrder } from "../../utils/templates";
 import useSuccessToast from "../../../hooks/SuccessToast/SuccessToast";
 import styles from "./TestConnection.module.css";
 import IntegrationContext from "../../../store/integration-context";
+import SkeletonLoader from "../../SkeletonLoader/SkeletonLoader";
 const axios = require("axios");
 
 const TestConnection = (props) => {
@@ -125,7 +126,6 @@ const TestConnection = (props) => {
     <Card>
       <Card.Section>
         <Heading>Integration Info</Heading>
-        {loading && <Spinner accessibilityLabel="Loading" size="small" />}
         <br />
         <div style={{ textAlign: "center" }}>
           <ButtonGroup>
@@ -134,7 +134,7 @@ const TestConnection = (props) => {
             <Button onClick={onUnactiveAccount}>Unactivate account</Button>
           </ButtonGroup>
         </div>
-        {company && (
+        {company && !loading && (
           <Card>
             <Card.Section>
               <div>
@@ -157,9 +157,9 @@ const TestConnection = (props) => {
             </Card.Section>
           </Card>
         )}
+        <div>{loading && <SkeletonLoader />}</div>
         <br />
       </Card.Section>
-      {/* <ErrorToast errorToast={errorToast} setErrorToast={setErrorToast} /> */}
       {displaySuccessToast}
       {displayErrorToast}
     </Card>
