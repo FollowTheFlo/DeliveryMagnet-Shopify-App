@@ -1,9 +1,9 @@
 import { Frame, Toast } from "@shopify/polaris";
 import React, { useState } from "react";
 
-const useSuccessToast = (d?: number) => {
+const useSuccessToast = (mseconds?: number) => {
   const [successToastText, setSuccessToastText] = useState("");
-  const [duration, setDuration] = useState(d ?? 10000);
+  const [duration, setDuration] = useState(mseconds ?? 5000);
 
   const displaySuccessToast = successToastText ? (
     <div style={{ height: "50px" }}>

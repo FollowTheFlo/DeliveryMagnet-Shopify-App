@@ -1,9 +1,9 @@
 import { Frame, Toast } from "@shopify/polaris";
 import React, { useState } from "react";
 
-const useErrorToast = (d?: number) => {
+const useErrorToast = (mseconds?: number) => {
   const [errorToastText, setErrorToastText] = useState("");
-  const [duration, setDuration] = useState(d ?? 10000);
+  const [duration, setDuration] = useState(mseconds ?? 5000);
 
   const displayErrorToast = errorToastText ? (
     <div style={{ height: "50px" }}>
