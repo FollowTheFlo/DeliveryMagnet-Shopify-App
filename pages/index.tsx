@@ -13,6 +13,7 @@ import IntegrationContext from "../store/integration-context";
 import NavCard from "../components/NavCard/NavCard";
 import PlannerPage from "../components/PlannerPage/PlannerPage";
 import styles from "./index.module.css";
+import SkeletonLoader from "../components/SkeletonLoader/SkeletonLoader";
 
 const Index: React.FC = (props) => {
   const adminCtx = useContext(AdminContext);
@@ -91,7 +92,7 @@ const Index: React.FC = (props) => {
 
       {loading ? (
         <React.Fragment>
-          <Spinner></Spinner>
+          <SkeletonLoader />
         </React.Fragment>
       ) : integrationCtx.isIntegrated ? (
         displayTabsPage()
