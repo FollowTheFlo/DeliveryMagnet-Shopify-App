@@ -118,6 +118,7 @@ const Inscription: React.FC = (props) => {
                   type="text"
                   clearButton
                   onClearButtonClick={() => setCode("")}
+                  autoComplete="off"
                 />
 
                 <Button disabled={!code} submit>
