@@ -17,7 +17,7 @@
     "@shopify/app-bridge-react": "^1.30.0",
     "@shopify/app-bridge-utils": "^1.30.0",
     "@shopify/koa-shopify-auth": "^4.1.2",
-    "@shopify/polaris": "^6.4.0",
+    "@shopify/polaris": "^7.5.0",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/koa": "^2.13.3",
     "apollo-boost": "^0.4.9",
