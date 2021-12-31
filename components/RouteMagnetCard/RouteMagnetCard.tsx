@@ -276,7 +276,7 @@ const RouteMagnetCard = (props: JobOrderProps) => {
   };
   const statusStack = (o: JobOrder) => {
     return (
-      <Card title="DeliveryMagnet deliveries">
+      <Card title="DeliveryMagnet deliveries" key={o.id}>
         <Card.Section>
           {statusList.map((status, i) => {
             // detailsMapping[status].show = i === index ? true  : false;
