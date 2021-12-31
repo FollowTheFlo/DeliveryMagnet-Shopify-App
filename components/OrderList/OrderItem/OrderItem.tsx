@@ -1,28 +1,14 @@
 import {
-  Card,
-  ResourceList,
-  Stack,
   TextStyle,
-  Thumbnail,
-  ButtonGroup,
   Button,
-  Tabs,
-  TextField,
-  Heading,
   Badge,
-  Collapsible,
   IndexTable,
   Spinner,
+  Link,
 } from "@shopify/polaris";
 
-import styles from "./OrderItem.module.css";
-
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  JobOrder,
-  ShopifyGraphQLOrder,
-  WHOrder,
-} from "../../../model/orders.model";
+import React, { useEffect, useState } from "react";
+import { JobOrder } from "../../../model/orders.model";
 import {
   wordsMapping,
   currencyMapping,
@@ -34,6 +20,7 @@ type OrderItemProps = {
   order: JobOrder;
   onPushOrder: (o: JobOrder) => void;
   onFulfillOrder: (o: JobOrder) => void;
+  onSelectOrder: (iId: string) => void;
   index: number;
   selectedResources: string[];
 };
@@ -123,9 +110,11 @@ const OrderItem = (props: OrderItemProps) => {
       position={index}
     >
       <IndexTable.Cell>
-        <TextStyle variation="strong">
-          {order.cancelledAt ? <del>{order.name}</del> : order.name}
-        </TextStyle>
+        <Link onClick={() => props.onSelectOrder(props.id)}>
+          <TextStyle variation="strong">
+            {order.cancelledAt ? <del>{order.name}</del> : order.name}
+          </TextStyle>
+        </Link>
       </IndexTable.Cell>
       <IndexTable.Cell>
         {order.cancelledAt ? <del> {order?.createdAt}</del> : order?.createdAt}
