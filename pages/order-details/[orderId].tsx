@@ -163,6 +163,7 @@ const OrderDetails: React.FC = (props) => {
         </Layout.Section>
         <Layout.Section oneThird>
           <RouteMagnetCard
+            key={order.id}
             onPushOrder={onPushToRM}
             onFulfillOrder={onFulfillOneOrder}
             order={order}
@@ -170,6 +171,7 @@ const OrderDetails: React.FC = (props) => {
         </Layout.Section>
         <Layout.Section oneThird>
           <CustomerCard
+            key={order.id}
             onPushOrder={onPushToRM}
             onFulfillOrder={onFulfillOneOrder}
             order={order}

@@ -6,6 +6,7 @@ export interface StatusAction {
 }
 
 export interface JobOrderProps {
+  key?: any;
   order: JobOrder;
   onPushOrder: (o: JobOrder) => void;
   onFulfillOrder: (o: JobOrder) => void;
