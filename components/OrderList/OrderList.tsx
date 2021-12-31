@@ -1,5 +1,4 @@
 import styles from "./OrderList.module.css";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState, useCallback, useContext } from "react";
 const axios = require("axios");
@@ -9,9 +8,7 @@ import {
   Card,
   Button,
   IndexTable,
-  useIndexResourceState,
   Pagination,
-  TextStyle,
   Heading,
   Stack,
 } from "@shopify/polaris";
@@ -23,7 +20,6 @@ import {
   GET_ORDERS_AFTER,
   GET_ORDERS_PREVIOUS,
 } from "../utils/graphQlQueries";
-import fetchApi from "../utils/fetchApi";
 import { JobOrder, ShopifyGraphQLOrder } from "../../model/orders.model";
 import { RmJob, RmJobWithStep } from "../../model/jobs.model";
 import { SuccessResponse } from "../../model/responses.model";
@@ -31,12 +27,10 @@ import {
   CursorSelection,
   IndexListSelection,
   PageInfo,
-  StatusAction,
 } from "../../model/input.model";
 import { convertGraphQlToWebHookOrder } from "../utils/convertion";
 import OrdersFilter from "./OrdersFilter/OrdersFilter";
 import useErrorToast from "../../hooks/ErrorToast/ErrorToast";
-import useSuccessToast from "../../hooks/SuccessToast/SuccessToast";
 import { en } from "../utils/localMapping";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 import { formatOrder, getStatusAction } from "../utils/orderUtils";
@@ -60,8 +54,6 @@ const OrderList: React.FC = (props) => {
   const router = useRouter();
   // displayErrorToast is a jsx element, when setErrorToastText has non empty text, toast appears.
   const { displayErrorToast, setErrorToastText } = useErrorToast(5000); //5sec toast display duration
-  // flag to avoid row selection when pressing Button within the row
-  let preventRowSelection = false;
 
   // IndexListSelection values are given when changing selection, we keep track on it as local state
   const [selectedResources, setSelectedResources] =
@@ -282,7 +274,6 @@ const OrderList: React.FC = (props) => {
   };
 
   const onPushToRM = (jOrder: JobOrder) => {
-    preventRowSelection = true;
     console.log("onPushToRM", jOrder);
     console.log("setPreventSel", true);
     console.log("domain", integrationCtx.domain);
@@ -313,7 +304,7 @@ const OrderList: React.FC = (props) => {
 
   const onFulfillOneOrder = (o: JobOrder) => {
     console.log("onFulfillOneOrder1", o);
-    preventRowSelection = true;
+
     const orderId = o.id;
     // use REST api to fulfill an order, send request to our NextJS server, then our server will request Shopify
     axios
@@ -341,38 +332,15 @@ const OrderList: React.FC = (props) => {
       });
   };
 
-  const onSelectionChangeHandler = (
-    selectionType: any,
-    toggleType: boolean,
-    selectedOrderId: any
-  ) => {
-    console.log(
-      "onSelectionChange",
-      selectionType,
-      toggleType,
-      selectedOrderId
-    );
-
-    setSelectedResources((prevValue) => {
-      return {
-        selectionType,
-        toggleType,
-        selection: selectedOrderId ?? prevValue.selection,
-      };
-    });
-
-    console.log("preventRowSelection", preventRowSelection);
-    // preventRowSelection is true when we press Action button, in this scenario we don't want to select the row, we want button click method.
-    // this flag allows us to handle those 2 scenario: row selection click and Action button click
-    if (preventRowSelection) {
-      console.log("in preventRowSelection condition");
-      preventRowSelection = false;
-      return;
-    }
+  const onSelectOrderHandler = (selectedOrderId: string) => {
     if (!selectedOrderId) return;
     // open order details page
-    router.push(`/order-details/${selectedOrderId}`);
+    console.log("select ON");
+    router
+      .push(`/order-details/${selectedOrderId}`)
+      .then((success) => console.log("select ", success));
   };
+
   // display jobOrder rows form list
   const jobOrderRows = (list: JobOrder[]) => {
     console.log("rowMarkup");
@@ -385,6 +353,7 @@ const OrderList: React.FC = (props) => {
           order={o}
           onPushOrder={onPushToRM}
           onFulfillOrder={onFulfillOneOrder}
+          onSelectOrder={onSelectOrderHandler}
           selectedResources={selectedResources.selection}
         />
       );
@@ -394,12 +363,11 @@ const OrderList: React.FC = (props) => {
   const IndexTableBlock = () => {
     return (
       <IndexTable
-        selectable={true}
+        selectable={false}
         resourceName={{ singular: "Order", plural: "Orders" }}
         itemCount={ordersCtx.jobOrders.length}
         selectedItemsCount={0}
         loading={loadingMessage ? true : false}
-        onSelectionChange={onSelectionChangeHandler}
         headings={[
           { title: "Name" },
           { title: "Created" },
@@ -416,7 +384,7 @@ const OrderList: React.FC = (props) => {
       </IndexTable>
     );
   };
-
+  //-------- Paginations --------
   const onPaginationPrevious = () => {
     // pagination Previous button clicked, get first cursor of jobOrder list as we seek the page before it
     console.log("onPaginationPrevious");
@@ -456,6 +424,7 @@ const OrderList: React.FC = (props) => {
     });
   };
 
+  // ------ Filter by types: LocalDelivery OR/AND Shipment
   const handleDeliveryTypeChange = useCallback((choicesList: string[]) => {
     console.log("handleDeliveryTypeChange", choicesList);
     if (!choicesList || choicesList.length === 0) {
