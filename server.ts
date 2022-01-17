@@ -88,6 +88,7 @@ app.prepare().then(() => {
   console.log("server beforeAuth");
   server.use(
     createShopifyAuth({
+      accessMode: "offline",
       async afterAuth(ctx) {
         console.log("server afterAuth");
         const { shop, scope, accessToken } = ctx.state.shopify;
@@ -110,7 +111,7 @@ app.prepare().then(() => {
 
   router.post(
     "/graphql",
-    verifyRequest({ returnHeader: true }),
+    verifyRequest({ accessMode: "offline", returnHeader: true }),
     async (ctx, next) => {
       await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
     }
